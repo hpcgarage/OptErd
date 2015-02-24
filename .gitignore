@@ -1,0 +1,21 @@
+*.o
+*.d
+
+# Binaries
+test/unit-test
+test/perf-test
+lib/*.a
+build/
+
+# Logs
+*.log
+ivalues.ref
+
+# Generated files
+legacy/include/CInt.h
+
+# Ninja files
+.ninja_deps
+.ninja_log
+build.ninja
+
