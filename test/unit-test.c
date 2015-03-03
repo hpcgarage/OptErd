@@ -22,7 +22,9 @@
 #include <stdint.h>
 #include <math.h>
 #include <time.h>
+#ifdef HAS_MALLOC_H
 #include <malloc.h>
+#endif
 
 #include <screening.h>
 
