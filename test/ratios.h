@@ -19,28 +19,22 @@
 
 #include <config.h>
 
-#if ERD_RECORD_RATIO
+#if ERD_RECORD_RATIO && defined(__linux__)
     #include <inttypes.h>
     #include <errno.h>
     #include <unistd.h>
     #include <sys/ioctl.h>
 
-# ifdef __linux__
     #include <linux/perf_event.h>
     #include <asm/unistd.h>
 
     static int perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags) {
         return syscall(__NR_perf_event_open, hw_event, pid, cpu, group_fd, flags);
     }
-# endif
 
     volatile uint64_t numerator = 0;
     volatile uint64_t denominator = 0;
-#endif
 
-
-
-#if ERD_RECORD_RATIO
     #if ERD_RECORD_CPI_RATIO
         #define NUMERATOR_PERF_ATTR_TYPE PERF_TYPE_HARDWARE
         #define NUMERATOR_PERF_ATTR_CONFIG PERF_COUNT_HW_CPU_CYCLES

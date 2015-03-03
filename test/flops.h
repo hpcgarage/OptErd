@@ -19,11 +19,12 @@
 
 #include <config.h>
 
-#if ERD_RECORD_FLOPS
+#if ERD_RECORD_FLOPS && defined(__linux__)
     #include <inttypes.h>
     #include <errno.h>
     #include <unistd.h>
     #include <sys/ioctl.h>
+
     #include <linux/perf_event.h>
     #include <asm/unistd.h>
 
@@ -32,11 +33,7 @@
     }
 
     volatile uint64_t flops = 0;
-#endif
 
-
-
-#if ERD_RECORD_FLOPS
     #if ERD_RECORD_K15_DPADD_FLOPS
         #define PERF_ATTR_CONFIG 0x1003
         #define PERF_COUNTER_NAME "DP ADD GFLOPs"
