@@ -24,10 +24,10 @@
     #include <errno.h>
     #include <unistd.h>
     #include <sys/ioctl.h>
-    #include <asm/unistd.h>
 
 # ifdef __linux__
     #include <linux/perf_event.h>
+    #include <asm/unistd.h>
 
     static int perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags) {
         return syscall(__NR_perf_event_open, hw_event, pid, cpu, group_fd, flags);
