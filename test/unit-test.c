@@ -21,7 +21,13 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <math.h>
+
+#if defined(__APPLE__) && defined(__MACH__)
+#include <sys/time.h>
+#else /* Linux, etc. */
 #include <time.h>
+#endif
+
 #ifdef HAS_MALLOC_H
 #include <malloc.h>
 #endif
@@ -29,6 +35,15 @@
 #include <screening.h>
 
 static uint64_t getTimerTicks(void) {
+#if defined(__APPLE__) && defined(__MACH__)
+    struct timeval tv;
+    const int result = gettimeofday(&tv, NULL);
+    if (result != 0) {
+        perror("gettimeofday");
+        abort();
+    }
+    return ((uint64_t)tv.tv_sec) * UINT64_C(1000000) + ((uint64_t)tv.tv_usec);
+#else /* Linux, etc. */
     struct timespec ts;
     const int result = clock_gettime(CLOCK_MONOTONIC, &ts);
     if (result != 0) {
@@ -36,6 +51,7 @@ static uint64_t getTimerTicks(void) {
         abort();
     }
     return ((uint64_t)ts.tv_sec) * UINT64_C(1000000000) + ((uint64_t)ts.tv_nsec);
+#endif
 }
 
 static uint64_t getTimerFrequency(void) {
@@ -137,6 +153,7 @@ int main(int argc, char **argv) {
 
             uint32_t* shellIndicesN = memalign(64, sizeof(double) * (shellIndexNEnd - shellIndexNStart) * (shellIndexQEnd - shellIndexQStart));
             uint32_t* shellIndicesQ = memalign(64, sizeof(double) * (shellIndexNEnd - shellIndexNStart) * (shellIndexQEnd - shellIndexQStart));
+
             uint32_t shellIndicesCount = 0;
 
             /* Prepare indices */
