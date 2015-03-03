@@ -24,12 +24,15 @@
     #include <errno.h>
     #include <unistd.h>
     #include <sys/ioctl.h>
-    #include <linux/perf_event.h>
     #include <asm/unistd.h>
+
+# ifdef __linux__
+    #include <linux/perf_event.h>
 
     static int perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu, int group_fd, unsigned long flags) {
         return syscall(__NR_perf_event_open, hw_event, pid, cpu, group_fd, flags);
     }
+# endif
 
     volatile uint64_t numerator = 0;
     volatile uint64_t denominator = 0;
