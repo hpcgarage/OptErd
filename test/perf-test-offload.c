@@ -341,7 +341,11 @@ int main (int argc, char **argv)
     }
 */
     // Prepare all the tasks
+#ifdef __INTEL_COMPILER
     taskArray = (int *)_mm_malloc(ns * ns * ns * ns * 5 * sizeof(int), 2 * 1024 * 1024);
+#else
+    posix_memalign((void**)taskArray, ns * ns * ns * ns * 5 * sizeof(int), 2 * 1024 * 1024);
+#endif
 
     int numTasks = 0;
     int expectedTotalInts = 0;
@@ -389,7 +393,12 @@ int main (int argc, char **argv)
 
 #ifdef MIC_ONLY
 // Run the tasks on MIC only
+#ifdef __INTEL_COMPILER
     double *F_mic = (double *)_mm_malloc (sizeof(double) * nthreads_mic * sub_mat_size_aligned, 2 * 1024 * 1024);
+#else
+    double *F_mic;
+    posix_memalign((void**)&F_mic, sizeof(double) * nthreads_mic * sub_mat_size_aligned, 2 * 1024 * 1024);
+#endif
     assert (F_mic != NULL);
     memset (F_mic, 0, sizeof(double) * sub_mat_size_aligned);
 
@@ -429,7 +438,12 @@ int main (int argc, char **argv)
 #endif
 #ifdef CPU_ONLY
     // Run the tasks on CPU only
+#ifdef __INTEL_COMPILER
     double *F = (double *)_mm_malloc (sizeof(double) * sub_mat_size_aligned * nthreads, 64);
+#else
+    double *F;
+    posix_memalign((void**)&F, sizeof(double) * sub_mat_size_aligned * nthreads, 64);
+#endif
     assert (F != NULL);
     memset (F, 0, sizeof(double) * sub_mat_size_aligned * nthreads);
     clock_start = __rdtsc();
@@ -445,11 +459,20 @@ int main (int argc, char **argv)
     
     printf("sub_mat_size = %d, sub_mat_size_aligned = %d\n", sub_mat_size, sub_mat_size_aligned);
 
+#ifdef __INTEL_COMPILER
     F_hetero = (double *)_mm_malloc (sizeof(double) * sub_mat_size_aligned * (num_devices + 1), 64);
+#else
+    posix_memalign((void**)&F_hetero, sizeof(double) * sub_mat_size_aligned * (num_devices + 1), 64);
+#endif
     assert (F_hetero != NULL);
     memset (F_hetero, 0, sizeof(double) * sub_mat_size_aligned * (num_devices + 1));
 
+#ifdef __INTEL_COMPILER
     double *F_hetero_cpu = (double *)_mm_malloc(sizeof(double) * sub_mat_size_aligned * nthreads, 64);
+#else
+    double *F_hetero_cpu;
+    posix_memalign((void**)&F_hetero_cpu, sizeof(double) * sub_mat_size_aligned * nthreads, 64);
+#endif
     assert (F_hetero_cpu != NULL);
     memset(F_hetero_cpu, 0, sizeof(double) * sub_mat_size_aligned * nthreads);
 
