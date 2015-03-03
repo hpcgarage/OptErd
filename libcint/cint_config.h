@@ -30,8 +30,22 @@
                              //  0 is no debug print info at all,
                              //  10 is full info
 
-#define ALIGNED_MALLOC(size)  _mm_malloc(size, __ALIGNLEN__)
-#define ALIGNED_FREE(addr)    _mm_free(addr)
+#ifdef __INTEL_COMPILER
+# define ALIGNED_MALLOC(size)  _mm_malloc(size, __ALIGNLEN__)
+# define ALIGNED_FREE(addr)    _mm_free(addr)
+#elif USE_GENERIC_HEAP_MANAGER
+# define ALIGNED_MALLOC(size)  malloc(size)
+# define ALIGNED_FREE(addr)    free(addr)
+#else
+static inline void * my_mm_malloc(size_t size, size_t alignment)
+{
+    void * ptr;
+    posix_memalign(&ptr, size, alignment);
+    return ptr;
+}
+# define ALIGNED_MALLOC(size)  my_mm_malloc(size, __ALIGNLEN__)
+# define ALIGNED_FREE(addr)    free(addr)
+#endif
 
 
 #if ( _DEBUG_LEVEL_ == -1 )
