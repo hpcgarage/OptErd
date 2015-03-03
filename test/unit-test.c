@@ -151,8 +151,15 @@ int main(int argc, char **argv) {
             const uint32_t shellIndexQStart = shellptr[shellIndexP];
             const uint32_t shellIndexQEnd = shellptr[shellIndexP+1];
 
+#ifdef HAS_MALLOC_H
             uint32_t* shellIndicesN = memalign(64, sizeof(double) * (shellIndexNEnd - shellIndexNStart) * (shellIndexQEnd - shellIndexQStart));
             uint32_t* shellIndicesQ = memalign(64, sizeof(double) * (shellIndexNEnd - shellIndexNStart) * (shellIndexQEnd - shellIndexQStart));
+#else
+            uint32_t* shellIndicesN;
+            uint32_t* shellIndicesQ;
+            posix_memalign((void**)&shellIndicesN, 64, sizeof(double) * (shellIndexNEnd - shellIndexNStart) * (shellIndexQEnd - shellIndexQStart));
+            posix_memalign((void**)&shellIndicesQ, 64, sizeof(double) * (shellIndexNEnd - shellIndexNStart) * (shellIndexQEnd - shellIndexQStart));
+#endif
 
             uint32_t shellIndicesCount = 0;
 
