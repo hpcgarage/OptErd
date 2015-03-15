@@ -90,7 +90,7 @@ class Configuration:
         else:
             cflags += ["-D__ERD_PROFILE__"]
             if use_icc:
-                cflags += ["-offload=none", "-diag-disable", "161,2423"]
+                cflags += ["-qoffload=none", "-diag-disable", "161,2423"]
         cflags += Configuration._extra_cflags
         fflags = []
         if use_ifort:
