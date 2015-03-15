@@ -18,7 +18,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 #include <string.h>
 #include <assert.h>
 

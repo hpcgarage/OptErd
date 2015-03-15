@@ -22,7 +22,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
+
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #ifdef __ERD_PROFILE__
 #include "erd_profile.h"

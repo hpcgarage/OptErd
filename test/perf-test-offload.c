@@ -21,9 +21,15 @@
 #include <math.h>
 #include <sys/time.h>
 #include <string.h>
+
+#if defined(__INTEL_COMPILER) || defined(HAVE_MKL)
 #include <mkl.h>
 #include <mkl_cblas.h>
+#endif
+
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #include "CInt.h"
 #include "screening.h"
