@@ -34,7 +34,7 @@
     #define ERD_OFFLOAD
 #endif
 
-#ifdef __ERD_PROFILE__
+#if defined(__ERD_PROFILE__) && defined(__linux__)
     #define ERD_PROFILE_START(function) \
         const uint64_t start_ticks_##function = __rdtsc();
     #define ERD_PROFILE_END(function) \
