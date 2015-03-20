@@ -175,13 +175,6 @@ ERD_OFFLOAD void erd__csgto(
     bool spheric,
     uint32_t buffer_capacity, uint32_t output_length[restrict static 1], double output_buffer[restrict static 1])
 {
-#ifdef __ERD_PROFILE__
-    #ifdef _OPENMP
-    const int tid = omp_get_thread_num();
-    #else
-    const int tid = 0;
-    #endif
-#endif
     ERD_PROFILE_START(erd__csgto)
 
 /*             ...fix the A,B,C,D labels from the 1,2,3,4 ones. */
@@ -217,7 +210,6 @@ ERD_OFFLOAD void erd__csgto(
     const uint32_t shella = shell[A], shellb = shell[B], shellc = shell[C], shelld = shell[D];
     const uint32_t npgtoa = npgto[A], npgtob = npgto[B], npgtoc = npgto[C], npgtod = npgto[D];
     const double *restrict alphaa = alpha[A], *restrict alphab = alpha[B], *restrict alphac = alpha[C], *restrict alphad = alpha[D];
-    const double *restrict cca = cc[A], *restrict ccb = cc[B], *restrict ccc = cc[C], *restrict ccd = cc[D];
     const double *restrict norma = norm[A], *restrict normb = norm[B], *restrict normc = norm[C], *restrict normd = norm[D];
     
     // initialize values
@@ -266,11 +258,13 @@ ERD_OFFLOAD void erd__csgto(
 /*                pairs and the corresponding exponential prefactors. */
     const uint32_t npgtoab = npgtoa * npgtob;
     const uint32_t npgtocd = npgtoc * npgtod;
-    const uint32_t nxyzt = nxyzet * nxyzft;
 
-    ERD_SIMD_ALIGN uint32_t prima[PAD_LEN(npgtoab)], primb[PAD_LEN(npgtoab)], primc[PAD_LEN(npgtocd)], primd[PAD_LEN(npgtocd)];
-    ERD_SIMD_ALIGN double rhoab[PAD_LEN(npgtoab)];
-    ERD_SIMD_ALIGN double rhocd[PAD_LEN(npgtocd)];
+    ERD_SIMD_ALIGN uint32_t prima[PAD_SIMD_32(npgtoab)];
+    ERD_SIMD_ALIGN uint32_t primb[PAD_SIMD_32(npgtoab)];
+    ERD_SIMD_ALIGN uint32_t primc[PAD_SIMD_32(npgtocd)];
+    ERD_SIMD_ALIGN uint32_t primd[PAD_SIMD_32(npgtocd)];
+    ERD_SIMD_ALIGN double rhoab[PAD_SIMD_64(npgtoab)];
+    ERD_SIMD_ALIGN double rhocd[PAD_SIMD_64(npgtocd)];
     uint32_t nij, nkl;
     ERD_PROFILE_START(erd__set_ij_kl_pairs)
     erd__set_ij_kl_pairs(npgtoa, npgtob, npgtoc, npgtod,
@@ -300,7 +294,7 @@ ERD_OFFLOAD void erd__csgto(
     ERD_PROFILE_START(erd__prepare_ctr)
     const double factor = PREFACT * spnorm;
     const uint32_t npmin = min4x32u(npgtoa, npgtob, npgtoc, npgtod);
-    ERD_SIMD_ALIGN double scaled_norm[PAD_LEN(npmin)];
+    ERD_SIMD_ALIGN double scaled_norm[PAD_SIMD_64(npmin)];
     if (npgtoa == npmin) {
         for (uint32_t i = 0; i < npgtoa; i++) {
             scaled_norm[i] = factor * norma[i];
@@ -435,10 +429,10 @@ ERD_OFFLOAD void erd__csgto(
     const uint32_t nrowmx = (mxshell / 2 + 1) * (mxshell / 2 + 2) / 2;
     const uint32_t nrymx = 2*mxshell + 1;
     const uint32_t nrotmx = nrowmx * nrymx;
-    ERD_SIMD_ALIGN double fbuffer[spheric ? PAD_LEN(nrotmx * 4) : 0];
-    ERD_SIMD_ALIGN uint32_t ibuffer[spheric ? PAD_LEN(nrotmx * 4 + nrya + nryb + nryc + nryd) : 0];
+    ERD_SIMD_ALIGN double fbuffer[spheric ? PAD_SIMD_64(nrotmx * 4) : 0];
+    ERD_SIMD_ALIGN uint32_t ibuffer[spheric ? PAD_SIMD_32(nrotmx * 4 + nrya + nryb + nryc + nryd) : 0];
 
-    ERD_SIMD_ALIGN double cartnorm[spheric ? 0 : PAD_LEN(mxshell + 1)];
+    ERD_SIMD_ALIGN double cartnorm[spheric ? 0 : PAD_SIMD_64(mxshell + 1)];
     uint32_t isrowa, isrowb, isrowc, isrowd;
     uint32_t nrota, nrotb, nrotc, nrotd, nrowa, nrowb, nrowc, nrowd;
     uint32_t zsrota, zsrotb, zsrotc, zsrotd;
@@ -470,9 +464,9 @@ ERD_OFFLOAD void erd__csgto(
     uint32_t ixoff[4] = { 1, 1, 1, 1 };
     if (shelld != 0) {
         uint32_t pos1, pos2, nrowhrr;
-        ERD_SIMD_ALIGN double t[PAD_LEN(nrothrr*2)];
-        ERD_SIMD_ALIGN uint32_t row[PAD_LEN(nrothrr*2)];
-        ERD_SIMD_ALIGN uint32_t nrow[PAD_LEN(ncolhrr*2)];
+        ERD_SIMD_ALIGN double t[PAD_SIMD_64(nrothrr*2)];
+        ERD_SIMD_ALIGN uint32_t row[PAD_SIMD_32(nrothrr*2)];
+        ERD_SIMD_ALIGN uint32_t nrow[PAD_SIMD_32(ncolhrr*2)];
         ERD_PROFILE_START(erd__hrr_matrix)
         erd__hrr_matrix(nrothrr, ncolhrr, nxyzft, nxyzc, nxyzq,
                          shellc, shelld, shellq,

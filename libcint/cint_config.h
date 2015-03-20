@@ -31,7 +31,7 @@
                              //  10 is full info
 
 #ifdef __INTEL_COMPILER
-# define ALIGNED_MALLOC(size)  _mm_malloc(size, __ALIGNLEN__)
+# define ALIGNED_MALLOC(size)  _mm_malloc(size, 128)
 # define ALIGNED_FREE(addr)    _mm_free(addr)
 #elif USE_GENERIC_HEAP_MANAGER
 # define ALIGNED_MALLOC(size)  malloc(size)
@@ -40,10 +40,14 @@
 static inline void * my_mm_malloc(size_t size, size_t alignment)
 {
     void * ptr;
-    posix_memalign(&ptr, size, alignment);
-    return ptr;
+    int ret = posix_memalign(&ptr, alignment, size);
+    if (ret != 0) {
+        return NULL;
+    } else {
+        return ptr;
+    }
 }
-# define ALIGNED_MALLOC(size)  my_mm_malloc(size, __ALIGNLEN__)
+# define ALIGNED_MALLOC(size)  my_mm_malloc(size, 128)
 # define ALIGNED_FREE(addr)    free(addr)
 #endif
 

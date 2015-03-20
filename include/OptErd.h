@@ -3,6 +3,7 @@
 
 
 #include <stdint.h>
+#include <unistd.h>
 
 
 struct ERD;
@@ -212,9 +213,7 @@ void CInt_offload_getMaxMemory( ERD_t erd,
 #endif
 
 #define CINT_ASSERT(condition) if (!(condition)) { \
-    dprintf(2, "ASSERTION FAILED: %s in %s:%d\n", #condition, __FILE__, __LINE__); \
-    fsync(2); \
-    abort(); \
+    printf("ASSERTION FAILED: %s in %s:%d\n", #condition, __FILE__, __LINE__); \
 }
 
 #endif /* __OPT_ERD_H__ */

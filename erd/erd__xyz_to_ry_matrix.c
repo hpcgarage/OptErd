@@ -144,8 +144,8 @@ ERD_OFFLOAD void erd__xyz_to_ry_matrix(
     uint32_t row[restrict static nrowmx*(2*l+1)],
     double tmat[restrict static nrowmx*(2*l+1)])
 {
-    double a, b, c, d;
-    ERD_SIMD_ALIGN double temp[PAD_LEN(nxyz)];
+    double a = 0.0, b, c, d;
+    ERD_SIMD_ALIGN double temp[PAD_SIMD_64(nxyz)];
 
 /*             ...calculate the RNORM and the initial value of */
 /*                YNORM at M = -L. Form initial combined norm RYNORM. */

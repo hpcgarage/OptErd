@@ -97,7 +97,6 @@ ERD_OFFLOAD void erd__xyz_to_ry_abcd(uint32_t nxyza, uint32_t nxyzb, uint32_t nx
         *nrowd = ((shelld / 2 + 1) * (shelld / 2 + 2)) / 2;
         *nrotd = *nrowd * nryd;
         *z00d = 0;
-        const uint32_t z0dt = *z00d + *nrotd;
         *i0d1 = 0;
         *i0d2 = *i0d1 + nryd;
         erd__xyz_to_ry_matrix(nxyzd, *nrowd, shelld, &icore[*i0d1], &icore[*i0d2], &zcore[*z00d]);
@@ -121,7 +120,6 @@ ERD_OFFLOAD void erd__xyz_to_ry_abcd(uint32_t nxyza, uint32_t nxyzb, uint32_t nx
             *nrowc = ((shellc / 2 + 1) * (shellc / 2 + 2)) / 2;
             *nrotc = *nrowc * nryc;
             *z00c = *z00d + *nrotd;
-            const uint32_t z0ct = *z00c + *nrotc;
             *i0c1 = *i0d2 + *nrotd;
             *i0c2 = *i0c1 + nryc;
             erd__xyz_to_ry_matrix(nxyzc, *nrowc, shellc, &icore[*i0c1], &icore[*i0c2], &zcore[*z00c]);

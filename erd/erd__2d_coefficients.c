@@ -339,9 +339,9 @@ ERD_OFFLOAD void erd__2d_coefficients(uint32_t mij, uint32_t mkl, uint32_t ngqp,
 
                 for (uint32_t ng = 0; ng < ngqp; ++ng) {
                     n1++;
-                    if (n1 == SIMDW) {
+                    if (n1 == ERD_SIMD_WIDTH_64) {
                         ERD_2D_COEFF(n)
-                        n += SIMDW;
+                        n += ERD_SIMD_WIDTH_64;
                         n1 = 0;
                         pij256 = _mm256_broadcast_sd(&p[ij]);
                         pxij256 = _mm256_broadcast_sd(&px[ij]);

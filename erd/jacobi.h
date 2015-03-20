@@ -16,7 +16,9 @@
  * in the file COPYING.
  */
 
-#pragma once
+#ifndef JACOBI_H_
+#define JACOBI_H_
+
 
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(push, target(mic))
@@ -39,3 +41,6 @@ extern const double bjac[99];
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(pop)
 #endif
+
+
+#endif // JACOBI_H_

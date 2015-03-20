@@ -202,13 +202,6 @@ ERD_OFFLOAD void erd__e0f0_pcgto_block(
     const double rhoab[restrict static nij], const double rhocd[restrict static nkl],
     double output_buffer[restrict])
 {
-#ifdef __ERD_PROFILE__   
-    #ifdef _OPENMP
-    const int tid = omp_get_thread_num();
-    #else
-    const int tid = 0;
-    #endif
-#endif
     double xa = xyz0[A*4], ya = xyz0[A*4+1], za = xyz0[A*4+2];
     double xb = xyz0[B*4], yb = xyz0[B*4+1], zb = xyz0[B*4+2];
     double xc = xyz0[C*4], yc = xyz0[C*4+1], zc = xyz0[C*4+2];
@@ -250,7 +243,7 @@ ERD_OFFLOAD void erd__e0f0_pcgto_block(
     
     const double *restrict alphaa = alpha[A], *restrict alphab = alpha[B];
     const double *restrict cca = cc[A], *restrict ccb = cc[B];
-    const size_t simd_nij = PAD_LEN(nij);
+    const size_t simd_nij = PAD_SIMD_64(nij);
     ERD_SIMD_ALIGN double p[simd_nij], px[simd_nij], py[simd_nij], pz[simd_nij], pinvhf[simd_nij], scalep[simd_nij];
     ERD_SIMD_ZERO_TAIL_64f(p, simd_nij);
     ERD_SIMD_ZERO_TAIL_64f(px, simd_nij);
@@ -258,8 +251,8 @@ ERD_OFFLOAD void erd__e0f0_pcgto_block(
     ERD_SIMD_ZERO_TAIL_64f(pz, simd_nij);
     ERD_SIMD_ZERO_TAIL_64f(pinvhf, simd_nij);
     ERD_SIMD_ZERO_TAIL_64f(scalep, simd_nij);
-    #pragma simd
-    #pragma vector aligned
+    PRAGMA_SIMD
+    PRAGMA_VECTOR_ALIGN
     for (uint32_t ij = 0; ij < nij; ++ij) {        
         const uint32_t i = prima[ij];
         const uint32_t j = primb[ij];
@@ -277,7 +270,7 @@ ERD_OFFLOAD void erd__e0f0_pcgto_block(
 
     const double *restrict alphac = alpha[C], *restrict alphad = alpha[D];
     const double *restrict ccc = cc[C], *restrict ccd = cc[D];
-    const size_t simd_nkl = PAD_LEN(nkl);
+    const size_t simd_nkl = PAD_SIMD_64(nkl);
     ERD_SIMD_ALIGN double q[simd_nkl], qx[simd_nkl], qy[simd_nkl], qz[simd_nkl], qinvhf[simd_nkl], scaleq[simd_nkl];
     ERD_SIMD_ZERO_TAIL_64f(q, simd_nkl);
     ERD_SIMD_ZERO_TAIL_64f(qx, simd_nkl);
@@ -285,8 +278,8 @@ ERD_OFFLOAD void erd__e0f0_pcgto_block(
     ERD_SIMD_ZERO_TAIL_64f(qz, simd_nkl);
     ERD_SIMD_ZERO_TAIL_64f(qinvhf, simd_nkl);
     ERD_SIMD_ZERO_TAIL_64f(scaleq, simd_nkl);
-    #pragma simd
-    #pragma vector aligned
+    PRAGMA_SIMD
+    PRAGMA_VECTOR_ALIGN
     for (uint32_t kl = 0; kl < nkl; ++kl) {
         const uint32_t k = primc[kl];
         const uint32_t l = primd[kl];
@@ -312,8 +305,8 @@ ERD_OFFLOAD void erd__e0f0_pcgto_block(
 /*                            = 5  -->  4-center (AB|CD) integrals */
 /*                4-center (AB|CD) integrals are checked first */
 /*                (most common occurence in large systems). */
-    const size_t simd_mgqijkl = PAD_LEN(mgqijkl);
-    const size_t simd_nijkl = PAD_LEN(nijkl);
+    const size_t simd_mgqijkl = PAD_SIMD_64(mgqijkl);
+    const size_t simd_nijkl = PAD_SIMD_64(nijkl);
     const uint32_t nint2d = simd_mgqijkl * (shellp + 1) * (shellq + 1);
     ERD_SIMD_ALIGN double int2dx[nint2d];
     ERD_SIMD_ALIGN double tval[simd_nijkl], pqpinv[simd_nijkl];

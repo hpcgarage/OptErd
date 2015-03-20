@@ -114,14 +114,6 @@ ERD_OFFLOAD void erd__1111_csgto(
     uint32_t buffer_capacity, uint32_t integrals_count[restrict static 1], double integrals_ptr[restrict static 81])
 {
     uint32_t shell1 = shell[A], shell2 = shell[B], shell3 = shell[C], shell4 = shell[D];
-
-#ifdef __ERD_PROFILE__
-    #ifdef _OPENMP
-        const int tid = omp_get_thread_num();
-    #else
-        const int tid = 0;
-    #endif
-#endif
     ERD_PROFILE_START(erd__1111_csgto)
 
     const bool atomic = ((A ^ B) | (B ^ C) | (C ^ D)) == 0;
@@ -170,12 +162,12 @@ ERD_OFFLOAD void erd__1111_csgto(
     const double rn34sq = x34 * x34 + y34 * y34 + z34 * z34;
     const uint32_t npgto12 = npgto1 * npgto2;
     const uint32_t npgto34 = npgto3 * npgto4;
-    ERD_SIMD_ALIGN uint32_t prim1[PAD_LEN(npgto12)], prim2[PAD_LEN(npgto12)], prim3[PAD_LEN(npgto34)], prim4[PAD_LEN(npgto34)];
+    ERD_SIMD_ALIGN uint32_t prim1[PAD_SIMD_32(npgto12)], prim2[PAD_SIMD_32(npgto12)], prim3[PAD_SIMD_32(npgto34)], prim4[PAD_SIMD_32(npgto34)];
     const double spnorm = (double)(1 << (shell1 + shell2 + shell3 + shell4));
 
     ERD_PROFILE_START(erd__1111_set_ij_kl_pairs)
-    ERD_SIMD_ALIGN double rhoab[PAD_LEN(npgto12)];
-    ERD_SIMD_ALIGN double rhocd[PAD_LEN(npgto34)];
+    ERD_SIMD_ALIGN double rhoab[PAD_SIMD_64(npgto12)];
+    ERD_SIMD_ALIGN double rhocd[PAD_SIMD_64(npgto34)];
     uint32_t nij, nkl;
     erd__set_ij_kl_pairs(npgto1, npgto2, npgto3, npgto4,
                          minalpha[A], minalpha[B], minalpha[C], minalpha[D],
@@ -200,7 +192,7 @@ ERD_OFFLOAD void erd__1111_csgto(
     ERD_PROFILE_START(erd__1111_prepare_ctr)
     const double factor = PREFACT * spnorm;
     const uint32_t npmin = min4x32u(npgto1, npgto2, npgto3, npgto4);
-    ERD_SIMD_ALIGN double scaled_norm[PAD_LEN(npmin)];
+    ERD_SIMD_ALIGN double scaled_norm[PAD_SIMD_64(npmin)];
     if (npgto1 == npmin) {
         for (uint32_t i = 0; i < npgto1; i++) {
             scaled_norm[i] = factor * norm1[i];

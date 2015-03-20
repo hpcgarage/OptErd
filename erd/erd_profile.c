@@ -26,9 +26,11 @@
 #include <unistd.h>
 
 #include "erd_profile.h"
+#include "erd.h"
+#include "erdutil.h"
 
 
-__declspec(align(256)) uint64_t erd_ticks[MAXTHREADS][erd__num_ticks + 8];
+ERD_CACHE_ALIGN uint64_t erd_ticks[MAXTHREADS][erd__num_ticks + 8];
 
 static char ticks_name[erd__num_ticks][128] = 
 {
@@ -59,66 +61,47 @@ static char ticks_name[erd__num_ticks][128] =
 };
 
 
-void erd_reset_profile(void) {
-    #ifdef _OPENMP
+void erd_reset_profile(void)
+{
+#ifdef _OPENMP
     const int nthreads = omp_get_max_threads();
-    assert (nthreads <= MAXTHREADS);
-    #else
+    assert(nthreads <= MAXTHREADS);
+#else
     const int nthreads = 1;
-    #endif
+#endif
     printf("Reset profiler for %d threads\n", nthreads);
     #pragma omp parallel for
     for (int i = 0; i < nthreads; i++) {
-        memset (erd_ticks[i], 0, sizeof(uint64_t) * erd__num_ticks);
+        memset(erd_ticks[i], 0, sizeof(uint64_t) * erd__num_ticks);
     }
 }
 
-void erd_print_profile(int mode) {
-    double total_secs = 0.0;
 
-    #ifdef _OPENMP
+void erd_print_profile(int mode)
+{
+    double total_secs = 0.0;
+#ifdef _OPENMP
     const int nthreads = omp_get_max_threads ();
-    #else
+#else
     const int nthreads = 1;
-    #endif
-    const uint64_t start_clock = __rdtsc();
+#endif
+    const uint64_t start_clock = ReadTSC();
     sleep(1);
-    const uint64_t end_clock = __rdtsc();
+    const uint64_t end_clock = ReadTSC();
     const uint64_t freq = end_clock - start_clock;
 
-    printf ("\n");    
-    printf("freq = %.3lf GHz\n", (double)freq/1e9); 
+    printf("\n");    
+    printf("ticks = %.3e\n", (double)freq/1e9); 
     for (int k = 0; k < erd__num_ticks; k++) {
         total_secs = 0.0;
         printf("%28s", ticks_name[k]);
         for (int i = 0; i < nthreads; i++) {
             if (mode == 0) {
-                printf("\t%.3lf", (double)erd_ticks[i][k]/freq);
+                printf("\t%.3f", (double)erd_ticks[i][k]/freq);
             }
             total_secs += (double)erd_ticks[i][k]/freq;
         }        
-        printf(",\t%.3lf", total_secs/nthreads);
+        printf(",\t%.3f", total_secs/nthreads);
         printf("\n");
     }
-}
-
-
-int start_timer_ (uint64_t *stime) {
-    *stime  = __rdtsc();
-
-    return 0;
-}
-
-
-int end_timer_ (int *idx, uint64_t *stime)
-{
-    #ifdef _OPENMP
-    const int tid = omp_get_thread_num();   
-    #else
-    const int tid = 0;
-    #endif
-    const uint64_t etime = __rdtsc();
-    erd_ticks[tid][*idx] += etime - *stime;
-
-    return 0;
 }

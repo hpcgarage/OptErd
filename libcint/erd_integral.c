@@ -24,7 +24,6 @@
 #include <erd_integral.h>
 #include <cint_basisset.h>
 #include <cint_config.h>
-#include <cint_def.h>
 
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(push, target(mic))

@@ -16,7 +16,9 @@
  * in the file COPYING.
  */
 
-#pragma once
+#ifndef BOYS_H_
+#define BOYS_H_
+
 
 #include <stddef.h>
 
@@ -286,3 +288,6 @@ static inline struct Boys01234 boys01234(double t, double scale) {
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(pop)
 #endif
+
+
+#endif // BOYS_H_

@@ -21,6 +21,7 @@
 #include <assert.h>
 
 #include "erd.h"
+#include "erdutil.h"
 
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(push, target(mic))

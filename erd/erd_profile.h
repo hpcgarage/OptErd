@@ -16,13 +16,14 @@
  * in the file COPYING.
  */
 
-#ifndef __ERD_PROFILE_H__
-#define __ERD_PROFILE_H__
+#ifndef ERD_PROFILE_H_
+#define ERD_PROFILE_H_
+
 
 #include <stdint.h>
 
 
-#define MAXTHREADS     244
+#define MAXTHREADS     512
 
 
 typedef enum
@@ -59,12 +60,60 @@ typedef enum
 } ErdTicks_t;
 
 
-extern __declspec(align(256)) uint64_t erd_ticks[MAXTHREADS][erd__num_ticks + 8];
+extern uint64_t erd_ticks[MAXTHREADS][erd__num_ticks + 8];
+
+void erd_reset_profile(void);
+
+void erd_print_profile(int mode);
 
 
-void erd_reset_profile (void);
+inline uint64_t ReadTSC(void)
+{
+#if defined(__i386__)
+    uint64_t x;
+    __asm__ __volatile__ (".byte 0x0f, 0x31" : "=A" (x));
+    return x;
+#elif defined(__x86_64__)
+    uint32_t hi, lo;
+    __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+    return ( (uint64_t)lo)|( ((uint64_t)hi)<<32 );
+#elif defined(__powerpc__)
+    uint64_t result=0;
+    uint64_t upper, lower,tmp;
+    __asm__ __volatile__ (
+        "0:                  \n"
+        "\tmftbu   %0           \n"
+        "\tmftb    %1           \n"
+        "\tmftbu   %2           \n"
+        "\tcmpw    %2,%0        \n"
+        "\tbne     0b         \n"
+        : "=r"(upper),"=r"(lower),"=r"(tmp)
+    );
+    result = upper;
+    result = result<<32;
+    result = result|lower;
+    return result;
+#else
+    return 0;
+#endif // defined(__i386__)
+}
 
-void erd_print_profile (int mode);
+
+#if defined(ERD_PROFILE_) && defined(__linux__)
+    #define ERD_PROFILE_START(function) \
+    #ifdef _OPENMP \
+        {const int tid = omp_get_thread_num(); \
+    #else \
+        const int tid = 0; \
+    #endif \
+        const uint64_t start_ticks_##function = ReadTSC();
+    #define ERD_PROFILE_END(function) \
+        const uint64_t end_ticks_##function = ReadTSC(); \
+        erd_ticks[tid][function##_ticks] += end_ticks_##function - start_ticks_##function;}
+#else
+    #define ERD_PROFILE_START(function)
+    #define ERD_PROFILE_END(function)
+#endif
 
 
-#endif /* __ERD_PROFILE_H__ */
+#endif // ERD_PROFILE_H_

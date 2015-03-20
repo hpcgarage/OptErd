@@ -16,36 +16,19 @@
  * in the file COPYING.
  */
 
-#ifndef __ERD_H__
-#define __ERD_H__
+#ifndef ERD_H_
+#define ERD_H_
 
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-#ifdef __ERD_PROFILE__
 #include "erd_profile.h"
-#endif
 
-#define MAX(a,b)    ((a) < (b) ? (b) : (a))
-#define MIN(a,b)    ((a) > (b) ? (b) : (a))
 #define PREFACT     9.027033336764101
-#if defined (__MIC__) || defined (__AVX512__)
-#define SIMDW      8
-#elif defined (__AVX__)
-#define SIMDW      4
-#elif defined (__SSE__)
-#define SIMDW      2
-#else
-#define SIMDW      8
-#endif
 
-#define PAD_LEN(N)  ((N+SIMDW-1)/SIMDW * SIMDW )
-#define PAD_LEN2(N) ((N+SIMDW*2-1)/(SIMDW*2) * SIMDW*2 )
 
 /*******************************************************************/
 // C functions
@@ -292,4 +275,4 @@ void erd__rys_x_roots_weights(int nt, int ntgqp, int ngqp,
 #endif
 
 
-#endif /* __ERD_H__ */
+#endif // ERD_H_

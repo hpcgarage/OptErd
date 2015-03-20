@@ -131,11 +131,11 @@ int erd__2d_pq_integrals (int shellp, int shellq,
 
 /*             ...the case P = s-shell and Q = s-shell. */
   L1:
-    for (n = 0; n < ngqexq; n+=SIMDW)
+    for (n = 0; n < ngqexq; n+=ERD_SIMD_WIDTH_64)
     {
-        #pragma vector aligned
-        #pragma simd
-        for (n1 = 0; n1 < SIMDW; n1++)
+        PRAGMA_VECTOR_ALIGN
+        PRAGMA_SIMD
+        for (n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
         {
             int2dy[n + n1] = 1.0;
             int2dz[n + n1] = 1.0;
@@ -147,14 +147,14 @@ int erd__2d_pq_integrals (int shellp, int shellq,
 /*             ...the cases P = s-shell and Q >= p-shell. */
 /*                Evaluate I=0 and K=0,1. */
   L2:
-    for (n = 0; n < ngqexq; n+=SIMDW)
+    for (n = 0; n < ngqexq; n+=ERD_SIMD_WIDTH_64)
     {
-        ERD_SIMD_ALIGN double int2dx_0[SIMDW], int2dx_1[SIMDW], int2dx_2[SIMDW];
-        ERD_SIMD_ALIGN double int2dy_0[SIMDW], int2dy_1[SIMDW], int2dy_2[SIMDW];
-        ERD_SIMD_ALIGN double int2dz_0[SIMDW], int2dz_1[SIMDW], int2dz_2[SIMDW];
-        #pragma vector aligned
-        #pragma simd
-        for(n1 = 0; n1 < SIMDW; n1++)
+        ERD_SIMD_ALIGN double int2dx_0[ERD_SIMD_WIDTH_64], int2dx_1[ERD_SIMD_WIDTH_64], int2dx_2[ERD_SIMD_WIDTH_64];
+        ERD_SIMD_ALIGN double int2dy_0[ERD_SIMD_WIDTH_64], int2dy_1[ERD_SIMD_WIDTH_64], int2dy_2[ERD_SIMD_WIDTH_64];
+        ERD_SIMD_ALIGN double int2dz_0[ERD_SIMD_WIDTH_64], int2dz_1[ERD_SIMD_WIDTH_64], int2dz_2[ERD_SIMD_WIDTH_64];
+        PRAGMA_VECTOR_ALIGN
+        PRAGMA_SIMD
+        for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
         {
             int2dx_2[n1] = int2dx[n + n1];          
             int2dy[n + n1] = int2dy_2[n1] = 1.;
@@ -169,9 +169,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
         {
             double k1 = k - 1;
 
-            #pragma vector aligned
-            #pragma simd
-            for(n1 = 0; n1 < SIMDW; n1++)
+            PRAGMA_VECTOR_ALIGN
+            PRAGMA_SIMD
+            for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
             {
                 b1 = k1 * b01[n + n1];
                 int2dx_0[n1] = b1 * int2dx_2[n1] + d00x[n + n1] * int2dx_1[n1];
@@ -197,15 +197,15 @@ int erd__2d_pq_integrals (int shellp, int shellq,
 /*             ...the cases P >= p-shell and Q = s-shell. */
 /*                Evaluate I=0,1 and K=0. */
   L3:
-    for (n = 0; n < ngqexq; n+=SIMDW)
+    for (n = 0; n < ngqexq; n+=ERD_SIMD_WIDTH_64)
     {
-        ERD_SIMD_ALIGN double int2dx_0[SIMDW], int2dx_1[SIMDW], int2dx_2[SIMDW];
-        ERD_SIMD_ALIGN double int2dy_0[SIMDW], int2dy_1[SIMDW], int2dy_2[SIMDW];
-        ERD_SIMD_ALIGN double int2dz_0[SIMDW], int2dz_1[SIMDW], int2dz_2[SIMDW];
+        ERD_SIMD_ALIGN double int2dx_0[ERD_SIMD_WIDTH_64], int2dx_1[ERD_SIMD_WIDTH_64], int2dx_2[ERD_SIMD_WIDTH_64];
+        ERD_SIMD_ALIGN double int2dy_0[ERD_SIMD_WIDTH_64], int2dy_1[ERD_SIMD_WIDTH_64], int2dy_2[ERD_SIMD_WIDTH_64];
+        ERD_SIMD_ALIGN double int2dz_0[ERD_SIMD_WIDTH_64], int2dz_1[ERD_SIMD_WIDTH_64], int2dz_2[ERD_SIMD_WIDTH_64];
 
-        #pragma vector aligned
-        #pragma simd
-        for(n1 = 0; n1 < SIMDW; n1++)
+        PRAGMA_VECTOR_ALIGN
+        PRAGMA_SIMD
+        for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
         {
             int2dx_2[n1] = int2dx[n + n1];
             int2dy[n + n1] = int2dy_2[n1] = 1.;
@@ -220,9 +220,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
         {
             double i1 = i - 1;
 
-            #pragma vector aligned
-            #pragma simd
-            for(n1 = 0; n1 < SIMDW; n1++)
+            PRAGMA_VECTOR_ALIGN
+            PRAGMA_SIMD
+            for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
             {
                 b1 = i1 * b10[n + n1];
                 int2dx_0[n1] = b1 * int2dx_2[n1] + c00x[n + n1] * int2dx_1[n1];
@@ -249,15 +249,15 @@ int erd__2d_pq_integrals (int shellp, int shellq,
 /*                Evaluate I=0,SHELLP       I=0 */
 /*                         K=0        and   K=0,SHELLQ */
   L4:
-    for (n = 0; n < ngqexq; n+=SIMDW)
+    for (n = 0; n < ngqexq; n+=ERD_SIMD_WIDTH_64)
     {
-        ERD_SIMD_ALIGN double int2dx_0[SIMDW], int2dx_i1[SIMDW], int2dx_k1[SIMDW], int2dx_2[SIMDW];
-        ERD_SIMD_ALIGN double int2dy_0[SIMDW], int2dy_i1[SIMDW], int2dy_k1[SIMDW], int2dy_2[SIMDW];
-        ERD_SIMD_ALIGN double int2dz_0[SIMDW], int2dz_i1[SIMDW], int2dz_k1[SIMDW], int2dz_2[SIMDW];
+        ERD_SIMD_ALIGN double int2dx_0[ERD_SIMD_WIDTH_64], int2dx_i1[ERD_SIMD_WIDTH_64], int2dx_k1[ERD_SIMD_WIDTH_64], int2dx_2[ERD_SIMD_WIDTH_64];
+        ERD_SIMD_ALIGN double int2dy_0[ERD_SIMD_WIDTH_64], int2dy_i1[ERD_SIMD_WIDTH_64], int2dy_k1[ERD_SIMD_WIDTH_64], int2dy_2[ERD_SIMD_WIDTH_64];
+        ERD_SIMD_ALIGN double int2dz_0[ERD_SIMD_WIDTH_64], int2dz_i1[ERD_SIMD_WIDTH_64], int2dz_k1[ERD_SIMD_WIDTH_64], int2dz_2[ERD_SIMD_WIDTH_64];
 
-        #pragma vector aligned
-        #pragma simd
-        for(n1 = 0; n1 < SIMDW; n1++)
+        PRAGMA_VECTOR_ALIGN
+        PRAGMA_SIMD
+        for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
         {
             int2dx_2[n1] = int2dx[n + n1];
             int2dy[n + n1] = int2dy_2[n1] = 1.;
@@ -271,9 +271,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
         {
             double i1 = i - 1;
 
-            #pragma vector aligned
-            #pragma simd
-            for(n1 = 0; n1 < SIMDW; n1++)
+            PRAGMA_VECTOR_ALIGN
+            PRAGMA_SIMD
+            for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
             {
                 b1 = i1 * b10[n + n1];
                 int2dx_0[n1] = b1 * int2dx_2[n1] + c00x[n + n1] * int2dx_i1[n1];
@@ -293,9 +293,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
             }
         }
 
-        #pragma vector aligned
-        #pragma simd
-        for(n1 = 0; n1 < SIMDW; n1++)
+        PRAGMA_VECTOR_ALIGN
+        PRAGMA_SIMD
+        for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
         {
             weight = int2dx[n + n1];
             int2dx_2[n1] = weight;
@@ -310,9 +310,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
         {
             double k1 = k - 1;
 
-            #pragma vector aligned
-            #pragma simd
-            for(n1 = 0; n1 < SIMDW; n1++)
+            PRAGMA_VECTOR_ALIGN
+            PRAGMA_SIMD
+            for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
             {
                 b1 = k1 * b01[n + n1];
                 int2dx_0[n1] = b1 * int2dx_2[n1] + d00x[n + n1] * int2dx_k1[n1];
@@ -340,19 +340,19 @@ int erd__2d_pq_integrals (int shellp, int shellq,
 
     if (shellq <= shellp)
     {
-        for (n = 0; n < ngqexq; n+=SIMDW)
+        for (n = 0; n < ngqexq; n+=ERD_SIMD_WIDTH_64)
         {
-            ERD_SIMD_ALIGN double int2dx_00[SIMDW], int2dx_10[SIMDW], int2dx_20[SIMDW], int2dx_11[SIMDW];
-            ERD_SIMD_ALIGN double int2dy_00[SIMDW], int2dy_10[SIMDW], int2dy_20[SIMDW], int2dy_11[SIMDW];
-            ERD_SIMD_ALIGN double int2dz_00[SIMDW], int2dz_10[SIMDW], int2dz_20[SIMDW], int2dz_11[SIMDW];
+            ERD_SIMD_ALIGN double int2dx_00[ERD_SIMD_WIDTH_64], int2dx_10[ERD_SIMD_WIDTH_64], int2dx_20[ERD_SIMD_WIDTH_64], int2dx_11[ERD_SIMD_WIDTH_64];
+            ERD_SIMD_ALIGN double int2dy_00[ERD_SIMD_WIDTH_64], int2dy_10[ERD_SIMD_WIDTH_64], int2dy_20[ERD_SIMD_WIDTH_64], int2dy_11[ERD_SIMD_WIDTH_64];
+            ERD_SIMD_ALIGN double int2dz_00[ERD_SIMD_WIDTH_64], int2dz_10[ERD_SIMD_WIDTH_64], int2dz_20[ERD_SIMD_WIDTH_64], int2dz_11[ERD_SIMD_WIDTH_64];
 
             for (k = 1; k <= shellq; ++k)
             {
                 int k1 = k - 1;
 
-                #pragma vector aligned
-                #pragma simd
-                for(n1 = 0; n1 < SIMDW; n1++)
+                PRAGMA_VECTOR_ALIGN
+                PRAGMA_SIMD
+                for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
                 {
                     b0 = k * b00[n + n1];
 
@@ -370,9 +370,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
                     int2dz_20[n1] = int2dz[n + n1 + (k * (shellp + 1)) * ngqexq];
                 }
 
-                #pragma vector aligned
-                #pragma simd
-                for(n1 = 0; n1 < SIMDW; n1++)
+                PRAGMA_VECTOR_ALIGN
+                PRAGMA_SIMD
+                for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
                 {
                     int2dx[n + n1 + (k * (shellp + 1) + 1) * ngqexq] = int2dx_10[n1];
                     int2dy[n + n1 + (k * (shellp + 1) + 1) * ngqexq] = int2dy_10[n1];
@@ -381,9 +381,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
                 for (i = 2; i <= shellp; ++i)
                 {
                     int i1 = i - 1;
-                    #pragma vector aligned
-                    #pragma simd
-                    for(n1 = 0; n1 < SIMDW; n1++)
+                    PRAGMA_VECTOR_ALIGN
+                    PRAGMA_SIMD
+                    for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
                     {
                         b0 = k * b00[n + n1];
                         b1 = i1 * b10[n + n1];
@@ -402,9 +402,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
                         int2dz_20[n1] = int2dz_10[n1];
                         int2dz_10[n1] = int2dz_00[n1];
                     }
-                    #pragma vector aligned
-                    #pragma simd
-                    for(n1 = 0; n1 < SIMDW; n1++)
+                    PRAGMA_VECTOR_ALIGN
+                    PRAGMA_SIMD
+                    for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
                     {
                         int2dx[n + n1 + (i + k * (shellp + 1)) * ngqexq] = int2dx_00[n1];
                         int2dy[n + n1 + (i + k * (shellp + 1)) * ngqexq] = int2dy_00[n1];
@@ -416,19 +416,19 @@ int erd__2d_pq_integrals (int shellp, int shellq,
     }
     else
     {
-        for (n = 0; n < ngqexq; n+=SIMDW)
+        for (n = 0; n < ngqexq; n+=ERD_SIMD_WIDTH_64)
         {
-            ERD_SIMD_ALIGN double int2dx_00[SIMDW], int2dx_01[SIMDW], int2dx_02[SIMDW], int2dx_11[SIMDW];
-            ERD_SIMD_ALIGN double int2dy_00[SIMDW], int2dy_01[SIMDW], int2dy_02[SIMDW], int2dy_11[SIMDW];
-            ERD_SIMD_ALIGN double int2dz_00[SIMDW], int2dz_01[SIMDW], int2dz_02[SIMDW], int2dz_11[SIMDW];
+            ERD_SIMD_ALIGN double int2dx_00[ERD_SIMD_WIDTH_64], int2dx_01[ERD_SIMD_WIDTH_64], int2dx_02[ERD_SIMD_WIDTH_64], int2dx_11[ERD_SIMD_WIDTH_64];
+            ERD_SIMD_ALIGN double int2dy_00[ERD_SIMD_WIDTH_64], int2dy_01[ERD_SIMD_WIDTH_64], int2dy_02[ERD_SIMD_WIDTH_64], int2dy_11[ERD_SIMD_WIDTH_64];
+            ERD_SIMD_ALIGN double int2dz_00[ERD_SIMD_WIDTH_64], int2dz_01[ERD_SIMD_WIDTH_64], int2dz_02[ERD_SIMD_WIDTH_64], int2dz_11[ERD_SIMD_WIDTH_64];
 
             for (i = 1; i <= shellp; ++i)
             {
                 int i1 = i - 1;
 
-                #pragma vector aligned
-                #pragma simd
-                for(n1 = 0; n1 < SIMDW; n1++)
+                PRAGMA_VECTOR_ALIGN
+                PRAGMA_SIMD
+                for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
                 {
                     b0 = i * b00[n + n1];
                     int2dx_01[n1] = b0 * int2dx[n + n1 + i1 * ngqexq]
@@ -444,9 +444,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
                     int2dy_02[n1] = int2dy[n + n1 + (i) * ngqexq];
                     int2dz_02[n1] = int2dz[n + n1 + (i) * ngqexq];
                 }
-                #pragma vector aligned
-                #pragma simd
-                for(n1 = 0; n1 < SIMDW; n1++)
+                PRAGMA_VECTOR_ALIGN
+                PRAGMA_SIMD
+                for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
                 {
                     int2dx[n + n1 + (i + (shellp + 1)) * ngqexq] = int2dx_01[n1];
                     int2dy[n + n1 + (i + (shellp + 1)) * ngqexq] = int2dy_01[n1];
@@ -456,9 +456,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
                 for (k = 2; k <= shellq; ++k)
                 {
                     int k1 = k - 1;
-                    #pragma vector aligned
-                    #pragma simd
-                    for(n1 = 0; n1 < SIMDW; n1++)
+                    PRAGMA_VECTOR_ALIGN
+                    PRAGMA_SIMD
+                    for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
                     {
                         b0 = i * b00[n + n1];
                         b1 = k1 * b01[n + n1];
@@ -478,9 +478,9 @@ int erd__2d_pq_integrals (int shellp, int shellq,
                         int2dz_02[n1] = int2dz_01[n1];
                         int2dz_01[n1] = int2dz_00[n1];
                     }
-                    #pragma vector aligned
-                    #pragma simd
-                    for(n1 = 0; n1 < SIMDW; n1++)
+                    PRAGMA_VECTOR_ALIGN
+                    PRAGMA_SIMD
+                    for(n1 = 0; n1 < ERD_SIMD_WIDTH_64; n1++)
                     {
                         int2dx[n + n1 + (i + k * (shellp + 1)) * ngqexq] = int2dx_00[n1];
                         int2dy[n + n1 + (i + k * (shellp + 1)) * ngqexq] = int2dy_00[n1];

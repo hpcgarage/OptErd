@@ -22,6 +22,7 @@
 #include <immintrin.h>
 
 #include "erd.h"
+#include "erdutil.h"
 
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(push, target(mic))
@@ -177,7 +178,7 @@ int erd__int2d_to_e0f0 (int shella, int shellp, int shellc, int shellq,
             indz = indxyz[2];
             //indb = kf * nxyzet + ke;
             __m512d sum512 = _mm512_setzero_pd();
-            for(m = 0; m < ngqexq; m+=SIMDW)
+            for(m = 0; m < ngqexq; m+=ERD_SIMD_WIDTH_64)
             {
                 __m512d int2dx512 = _mm512_load_pd(&int2dx[indx + m]);
                 __m512d int2dy512 = _mm512_load_pd(&int2dy[indy + m]);
@@ -209,10 +210,10 @@ int erd__int2d_to_e0f0 (int shella, int shellp, int shellc, int shellq,
             indz = (ze + zf * (shellp + 1)) * ngqexq;
             //indb = kf * nxyzet + ke;
             sum = 0.0;
-            for(m = 0; m < ngqexq; m+=SIMDW)
+            for(m = 0; m < ngqexq; m+=ERD_SIMD_WIDTH_64)
             {
-#pragma vector aligned
-                for(m1 = 0; m1 < SIMDW; m1++)
+                PRAGMA_VECTOR_ALIGN
+                for(m1 = 0; m1 < ERD_SIMD_WIDTH_64; m1++)
                 {
                     sum += int2dx[m + m1 + indx]
                         * int2dy[m + m1 + indy]

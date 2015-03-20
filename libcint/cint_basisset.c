@@ -557,7 +557,6 @@ CIntStatus_t import_basis (char *file, BasisSet_t basis)
     {
         basis->basistype = SPHERICAL;
     }
-
     // get number of atoms
     natoms = 0;
     nshells = 0;
@@ -608,7 +607,6 @@ CIntStatus_t import_basis (char *file, BasisSet_t basis)
     for (i = 0; i < basis->bs_nelements; i++) {
         basis->bs_eptr[i] = -1;
     }
-    
     // get nshells
     rewind (fp);
     fgets (line, 1024, fp);
@@ -1024,7 +1022,6 @@ CIntStatus_t CInt_loadBasisSet (BasisSet_t basis, char *bsfile, char *molfile)
     {
         return status;
     }
-    
     return CINT_STATUS_SUCCESS;
 }
 

@@ -22,7 +22,6 @@
 
 #include <oed_integral.h>
 #include <cint_basisset.h>
-#include <cint_def.h>
 #include <cint_config.h>
 
 

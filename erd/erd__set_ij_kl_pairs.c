@@ -24,11 +24,6 @@
 #include "erd.h"
 #include "erdutil.h"
 
-#ifdef __x86_64__
-#include <x86intrin.h>
-#elif defined(__MIC__)
-#include <immintrin.h>
-#endif
 
 ERD_OFFLOAD static inline double pow3o4(double x) {
     return __builtin_sqrt(x * __builtin_sqrt(x));

@@ -191,7 +191,7 @@ ERD_OFFLOAD void erd__hrr_step(uint32_t nabo, uint32_t mrowin,
         x += nxyzx;
         for (uint32_t shella = shellx; shella < shellp; ++shella) {
             uint32_t offya = 0;
-            uint32_t y;
+            uint32_t y = 0;
             for (int32_t xa = shella; xa >= 0; xa--) {
                 ++offya;
                 for (uint32_t ya = offya; ya != 0; ya--) {
@@ -215,7 +215,7 @@ ERD_OFFLOAD void erd__hrr_step(uint32_t nabo, uint32_t mrowin,
     zo = yo + nxyzao;
     for (uint32_t shella = shellx; shella < shellp; shella++) {
         uint32_t offya = 0;
-        uint32_t z;
+        uint32_t z = 0;
         for (int32_t xa = shella; xa >= 0; xa--) {
             ++offya;
             for (uint32_t ya = offya; ya != 0; ya--) {

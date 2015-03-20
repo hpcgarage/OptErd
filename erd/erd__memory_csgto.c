@@ -102,5 +102,5 @@ ERD_OFFLOAD size_t erd__memory_csgto(uint32_t npgto1, uint32_t npgto2, uint32_t 
         nxyzhrr = min32u(nhrr1st, nhrr2nd);
     }
 
-    return PAD_LEN(nxyzt) + 2 * nxyzhrr;
+    return PAD_SIMD_64(nxyzt) + 2 * nxyzhrr;
 }
