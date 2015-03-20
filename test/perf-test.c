@@ -34,6 +34,10 @@
 #include <screening.h>
 #include <erd_profile.h>
 
+#ifdef __GNUC__
+#include <x86intrin.h>
+#endif
+
 static uint64_t get_cpu_frequency(void) {
     const uint64_t start_clock = __rdtsc();
     sleep(1);

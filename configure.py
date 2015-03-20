@@ -64,11 +64,12 @@ class Configuration:
         "haswell": ["-m64", "-march=core-avx2", "-DERD_HSW"],
         "piledriver": ["-m64", "-march=bdver2", "-DERD_PLD"]
     }
-    _extra_fflags = ["-O3", "-g", "-reentrancy", "threaded", "-recursive"]
-    _extra_cflags = ["-O3", "-g", "-std=gnu99", "-D__ALIGNLEN__=64", "-Wall", "-Wextra", "-Werror", "-Wno-unused-variable", "-openmp"]
+
+    _extra_fflags = ["-O3", "-g"]
+    _extra_cflags = ["-O3", "-g", "-std=gnu99", "-D__ALIGNLEN__=64", "-Wall", "-Wextra"]
     _native_cflags = ["-D__ERD_PROFILE__"]
     _offload_cflags = ["-offload-option,mic,compiler,\"-z defs -no-opt-prefetch\""]
-    _extra_ldflags = ["-static-intel", "-no-intel-extensions", "-lifcore", "-lrt", "-openmp"]
+    _extra_ldflags = ["-lrt", "-lm"]
 
     def __init__(self, options, ninja_build_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "build.ninja")):
         self.output = open(ninja_build_file, "w")
@@ -83,8 +84,10 @@ class Configuration:
 
         if use_icc:
             cflags = Configuration._cflags_intel_map[options.arch]
+            cflags += ["-openmp"]
         else:
             cflags = Configuration._cflags_gnu_map[options.arch]
+            cflags += ["-fopenmp"]
         if options.offload:
             cflags += Configuration._offload_cflags
         else:
@@ -95,10 +98,16 @@ class Configuration:
         fflags = []
         if use_ifort:
             fflags = Configuration._fflags_intel_map[options.arch]
+            fflags += ["-reentrancy", "threaded", "-recursive"]
         else:
             fflags = Configuration._fflags_gnu_map[options.arch]
+            fflags += ["-frecursive"]
         fflags += Configuration._extra_fflags
         ldflags = Configuration._extra_ldflags
+        if use_icc:
+            ldflags += ["-static-intel", "-no-intel-extensions", "-lifcore", "-openmp"]
+        else:
+            ldflags += ["-fopenmp"]
 
         cflags = " ".join(cflags)
         if options.cflags:
@@ -182,11 +191,11 @@ parser.add_argument("-arch", dest="arch", required=True,
     help="Target microarchitecture")
 parser.add_argument("-enable-offload", dest="offload", action="store_true",
     help="Enable MIC offload")
-parser.add_argument("--with-cc", dest="cc", default=os.getenv("CC", "icc"))
+parser.add_argument("--with-cc", dest="cc", default=os.getenv("CC", "gcc"))
 parser.add_argument("--with-cflags", dest="cflags", default=os.getenv("CFLAGS"))
-parser.add_argument("--with-fc", dest="fc", default=os.getenv("FC", "ifort"))
+parser.add_argument("--with-fc", dest="fc", default=os.getenv("FC", "gfortran"))
 parser.add_argument("--with-fflags", dest="fflags", default=os.getenv("FFLAGS"))
-parser.add_argument("--with-ar", dest="ar", default=os.getenv("AR", "xiar"))
+parser.add_argument("--with-ar", dest="ar", default=os.getenv("AR", "ar"))
 parser.add_argument("--with-ldflags", dest="ldflags", default=os.getenv("LDFLAGS"))
 
 
