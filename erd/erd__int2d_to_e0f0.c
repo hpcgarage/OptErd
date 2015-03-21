@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <immintrin.h>
 
 #include "erd.h"
 #include "erdutil.h"

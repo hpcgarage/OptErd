@@ -93,7 +93,7 @@
 #elif defined(__SSE2__)
     #define ERD_SIMD_ZERO_TAIL_64f(array, simd_length) _mm_store_pd(&array[simd_length - ERD_SIMD_WIDTH_64], _mm_setzero_pd())
 #elif defined(__powerpc__)
-    #define ERD_SIMD_ZERO_TAIL_64f(array, simd_length) vec_store(&array[simd_length - ERD_SIMD_WIDTH_64], vec_splats(0.0))
+    #define ERD_SIMD_ZERO_TAIL_64f(array, simd_length) vec_vsx_st(vec_splats(0.0), 0, &array[simd_length - ERD_SIMD_WIDTH_64])
 #else
     #define ERD_SIMD_ZERO_TAIL_64f(array, simd_length)
 #endif
