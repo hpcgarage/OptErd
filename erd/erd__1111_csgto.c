@@ -102,7 +102,7 @@
 /*                                    integrals over spherical gaussians */
 /*                                    starting at ZCORE (NFIRST) */
 /* ------------------------------------------------------------------------ */
-ERD_OFFLOAD void erd__1111_csgto(
+ERD_OFFLOAD void erd__1111_csgto(int screen, const double tol,
     uint32_t A, uint32_t B, uint32_t C, uint32_t D,
     const uint32_t npgto[restrict static 1],
     const uint32_t shell[restrict static 1],
@@ -169,7 +169,7 @@ ERD_OFFLOAD void erd__1111_csgto(
     ERD_SIMD_ALIGN double rhoab[PAD_SIMD_64(npgto12)];
     ERD_SIMD_ALIGN double rhocd[PAD_SIMD_64(npgto34)];
     uint32_t nij, nkl;
-    erd__set_ij_kl_pairs(npgto1, npgto2, npgto3, npgto4,
+    erd__set_ij_kl_pairs(screen, tol, npgto1, npgto2, npgto3, npgto4,
                          minalpha[A], minalpha[B], minalpha[C], minalpha[D],
                          x1, y1, z1, x2, y2, z2,
                          x3, y3, z3, x4, y4, z4,
@@ -182,6 +182,10 @@ ERD_OFFLOAD void erd__1111_csgto(
     if (nij * nkl == 0) {
         *integrals_count = 0;
         ERD_PROFILE_END(erd__1111_csgto)
+        return;
+    }
+    if (screen == PRIM_SCREEN_ONLY) {
+        *integrals_count = 1;
         return;
     }
     /* 

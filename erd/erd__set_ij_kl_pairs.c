@@ -33,8 +33,6 @@ ERD_OFFLOAD static inline double square(double x) {
     return x * x;
 }
 
-ERD_OFFLOAD static const double TOL = 1.0e-14;
-
 ERD_OFFLOAD static const double c0 = 0x1.0B1A240FD5AF4p-8;
 ERD_OFFLOAD static const double c1 = 0x1.352866F31ED93p+0;
 ERD_OFFLOAD static const double c2 = -0x1.567450B98A180p-1;
@@ -96,14 +94,14 @@ ERD_OFFLOAD static const double x0 = 0x1.628C5E7D820BFp-5;
     ERD_OFFLOAD static const __m512i zmm_init_j = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0 };
 #endif
 
-ERD_OFFLOAD __attribute__((noinline)) uint32_t set_pairs(
+ERD_OFFLOAD __attribute__((noinline)) uint32_t set_pairs(const double tol,
     uint32_t npgtoa, uint32_t npgtob, double rnabsq,
     const double alphaa[restrict static npgtoa], const double alphab[restrict static npgtoa],
     uint32_t prima[restrict static npgtoa*npgtob], uint32_t primb[restrict static npgtoa*npgtob],
     double rho[restrict static npgtoa*npgtob],
     double qmin, double smaxcd, double rminsq)
 {
-    const double csmaxcd = smaxcd * (0x1.C5BF891B4EF6Bp-1 / TOL);
+    const double csmaxcd = smaxcd * (0x1.C5BF891B4EF6Bp-1 / tol);
     uint32_t nij = 0;
     if (npgtoa > npgtob) {
         const double *restrict alphaa_copy = alphaa;
@@ -134,7 +132,7 @@ ERD_OFFLOAD __attribute__((noinline)) uint32_t set_pairs(
             /* approximates square(erf(sqrt(x))) on [0, 5] */
             const double f0 = c0 + x * (c1 + x * (c2 + x * (c3 + x * (c4 + x * c5))));
             const double f = f0 < 1.0 ? f0 : 1.0;
-            if (1){//ab*square(square(rhoab*csmaxcd) * (ab*f)) >= square((x*pqp)*square(p))) {
+            if (ab*square(square(rhoab*csmaxcd) * (ab*f)) >= square((x*pqp)*square(p))) {
                 rho[nij] = rhoab;
                 prima[nij] = i;
                 primb[nij] = j;
@@ -145,7 +143,8 @@ ERD_OFFLOAD __attribute__((noinline)) uint32_t set_pairs(
     return nij;
 }
 
-ERD_OFFLOAD void erd__set_ij_kl_pairs(
+
+ERD_OFFLOAD void erd__set_ij_kl_pairs(int screen, const double tol,
     uint32_t npgtoa, uint32_t npgtob, uint32_t npgtoc, uint32_t npgtod,
     double minalphaa, double minalphab, double minalphac, double minalphad,
     double xa, double ya, double za,
@@ -158,10 +157,67 @@ ERD_OFFLOAD void erd__set_ij_kl_pairs(
     const double alphac[restrict static npgtoc],
     const double alphad[restrict static npgtod],
     uint32_t nij_ptr[restrict static 1], uint32_t nkl_ptr[restrict static 1],
-    uint32_t prima[restrict static npgtoa*npgtob], uint32_t primb[restrict static npgtoa*npgtob], uint32_t primc[restrict static npgtoc*npgtod], uint32_t primd[restrict static npgtoc*npgtod],
+    uint32_t prima[restrict static npgtoa*npgtob],
+    uint32_t primb[restrict static npgtoa*npgtob],
+    uint32_t primc[restrict static npgtoc*npgtod],
+    uint32_t primd[restrict static npgtoc*npgtod],
     double rhoab[restrict static npgtoa*npgtob],
     double rhocd[restrict static npgtoc*npgtod])
 {
+    uint32_t nij = 0;
+    uint32_t nkl = 0;
+    if (screen == NO_PRIM_SCREEN) {
+        if (npgtoa > npgtob) {
+            const double *restrict alphaa_copy = alphaa;
+            alphaa = alphab;
+            alphab = alphaa_copy;
+            uint32_t *restrict prima_copy = prima;
+            prima = primb;
+            primb = prima_copy;
+            uint32_t npgtoa_copy = npgtoa;
+            npgtoa = npgtob;
+            npgtob = npgtoa_copy;
+        }
+        for (uint32_t i = 0; i < npgtoa; i += 1) {
+            const double a = alphaa[i];
+            for (uint32_t j = 0; j < npgtob; j += 1) {
+                const double b = alphab[j];
+                const double ab = -a * b;
+                const double rho = __builtin_exp(ab * rnabsq / (a + b));
+                rhoab[nij] = rho;
+                prima[nij] = i;
+                primb[nij] = j;
+                nij += 1;
+            }
+        }
+        if (npgtoc > npgtod) {
+            const double *restrict alphac_copy = alphac;
+            alphac = alphad;
+            alphad = alphac_copy;
+            uint32_t *restrict primc_copy = primc;
+            primc = primd;
+            primd = primc_copy;
+            uint32_t npgtoc_copy = npgtoc;
+            npgtoc = npgtod;
+            npgtod = npgtoc_copy;
+        }
+        for (uint32_t k = 0; k < npgtoc; k += 1) {
+            const double c = alphac[k];
+            for (uint32_t l = 0; l < npgtod; l += 1) {
+                const double d = alphad[l];
+                const double cd = -c * d;
+                const double rho = __builtin_exp(cd * rncdsq / (c +d));
+                rhocd[nkl] = rho;
+                primc[nkl] = k;
+                primd[nkl] = l;
+                nkl += 1;
+            }
+        }
+        *nij_ptr = nij;
+        *nkl_ptr = nkl;
+        return;
+    }
+    
     // compute min
     const double rminsq = erd__dsqmin_line_segments(xa, ya, za, xb, yb, zb, xc, yc, zc, xd, yd, zd);
 
@@ -176,14 +232,14 @@ ERD_OFFLOAD void erd__set_ij_kl_pairs(
     const double smaxcd = prefact * pow3o4(cdmin) * __builtin_exp(-cdmin * rncdsq * qinv) * qinv;
 
     /* ...perform K2 primitive screening on A,B part. */
-    uint32_t nij = set_pairs(npgtoa, npgtob, rnabsq, alphaa, alphab, prima, primb, rhoab, qmin, smaxcd, rminsq);
+    nij = set_pairs(tol, npgtoa, npgtob, rnabsq, alphaa, alphab, prima, primb, rhoab, qmin, smaxcd, rminsq);
     if (nij == 0) {
         *nij_ptr = 0;
         *nkl_ptr = 0;
         return;
     }
 
-    uint32_t nkl = set_pairs(npgtoc, npgtod, rncdsq, alphac, alphad, primc, primd, rhocd, pmin, smaxab, rminsq);
+    nkl = set_pairs(tol, npgtoc, npgtod, rncdsq, alphac, alphad, primc, primd, rhocd, pmin, smaxab, rminsq);
     if (nkl == 0) {
         *nij_ptr = 0;
         *nkl_ptr = 0;

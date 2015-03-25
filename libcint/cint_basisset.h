@@ -19,8 +19,8 @@
 #define __CINT_BASISSET_H__
 
 
-#include <OptErd.h>
-#include <cint_type.h>
+#include "OptErd.h"
+#include "cint_type.h"
 
 void _maxMomentum (BasisSet_t basis, int *max_momentum);
 

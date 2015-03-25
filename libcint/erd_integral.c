@@ -21,16 +21,21 @@
 #include <assert.h>
 #include <math.h>
 
-#include <erd_integral.h>
-#include <cint_basisset.h>
-#include <cint_config.h>
+#include "erd.h"
+#include "cint_basisset.h"
+#include "cint_config.h"
+
+
+#define CINT_SCREEN       NO_PRIM_SCREEN
+#define CINT_SCREEN_TOL   1.0e-14
 
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(push, target(mic))
 #endif
 
 
-static void erd_max_scratch(BasisSet_t basis, ERD_t erd) {
+static void erd_max_scratch(BasisSet_t basis, ERD_t erd)
+{
     const int max_momentum = basis->max_momentum;
     const int max_primid = basis->max_nexp_id;
     const int maxnpgto = basis->nexp[max_primid];
@@ -49,7 +54,8 @@ static void erd_max_scratch(BasisSet_t basis, ERD_t erd) {
 }
 
 
-static CIntStatus_t create_vrrtable(BasisSet_t basis, ERD_t erd) {
+static CIntStatus_t create_vrrtable(BasisSet_t basis, ERD_t erd)
+{
     const int max_shella = basis->max_momentum + 1;
     erd->max_shella = max_shella;
     const int max_shellp = 2 * (max_shella - 1);
@@ -84,14 +90,17 @@ static CIntStatus_t create_vrrtable(BasisSet_t basis, ERD_t erd) {
     return CINT_STATUS_SUCCESS;
 }
 
-static CIntStatus_t destroy_vrrtable(ERD_t erd) {
+
+static CIntStatus_t destroy_vrrtable(ERD_t erd)
+{
     free(erd->vrrtable[0]);
     free(erd->vrrtable);
     return CINT_STATUS_SUCCESS;
 }
 
 
-CIntStatus_t CInt_createERD(BasisSet_t basis, ERD_t *erd, int nthreads) {      
+CIntStatus_t CInt_createERD(BasisSet_t basis, ERD_t *erd, int nthreads)
+{      
     CINT_ASSERT(nthreads > 0);
 
     // malloc erd
@@ -106,7 +115,7 @@ CIntStatus_t CInt_createERD(BasisSet_t basis, ERD_t *erd, int nthreads) {
     for (int i = 0; i < nthreads; i++) {
         e->buffer[i] = (double *)ALIGNED_MALLOC(e->capacity * sizeof(double));
         CINT_ASSERT(e->buffer[i] != NULL);
-    }
+    } 
 
     // create vrr table
     const CIntStatus_t status = create_vrrtable(basis, e);
@@ -121,7 +130,8 @@ CIntStatus_t CInt_createERD(BasisSet_t basis, ERD_t *erd, int nthreads) {
 }
 
 
-CIntStatus_t CInt_destroyERD(ERD_t erd) {
+CIntStatus_t CInt_destroyERD(ERD_t erd)
+{
     for (uint32_t i = 0; i < erd->nthreads; i++) {
         ALIGNED_FREE(erd->buffer[i]);
     }
@@ -134,16 +144,19 @@ CIntStatus_t CInt_destroyERD(ERD_t erd) {
 }
 
 
-CIntStatus_t CInt_computeShellQuartet( BasisSet_t basis, ERD_t erd, int tid,
-                                        int A, int B, int C, int D,
-                                        double **integrals, int *nints)
+CIntStatus_t CInt_computeShellQuartet(BasisSet_t basis, ERD_t erd, int tid,
+                                      uint32_t A, uint32_t B, uint32_t C, uint32_t D,
+                                      double **integrals, int *nints)
 {
+#ifdef ERD_PROFILE_
+    erd_tid = tid;
+#endif
+    
 #if ( _DEBUG_LEVEL_ == 3 )
     if (A < 0 || A >= basis->nshells ||
         B < 0 || B >= basis->nshells ||
         C < 0 || C >= basis->nshells ||
-        D < 0 || D >= basis->nshells)
-    {
+        D < 0 || D >= basis->nshells) {
 #ifndef __INTEL_OFFLOAD
         CINT_PRINTF(1, "invalid shell indices\n");
 #endif
@@ -151,8 +164,7 @@ CIntStatus_t CInt_computeShellQuartet( BasisSet_t basis, ERD_t erd, int tid,
         return CINT_STATUS_INVALID_VALUE;
     }
     if (tid <= 0 ||
-        tid >= erd->nthreads)
-    {
+        tid >= erd->nthreads) {
 #ifndef __INTEL_OFFLOAD
         CINT_PRINTF(1, "invalid thread id\n");
 #endif
@@ -168,18 +180,19 @@ CIntStatus_t CInt_computeShellQuartet( BasisSet_t basis, ERD_t erd, int tid,
     const uint32_t orshell = shell1 | shell2 | shell3 | shell4;
     if (orshell < 2) {
         uint32_t integrals_count = 0;
-        erd__1111_csgto(
-            A, B, C, D,
+        erd__1111_csgto(CINT_SCREEN, CINT_SCREEN_TOL, A, B, C, D,
             basis->nexp, basis->momentum, basis->xyz0,
-            (const double**)basis->exp, basis->minexp, (const double**)basis->cc, (const double**)basis->norm,
+            (const double**)basis->exp,
+            basis->minexp,
+            (const double**)basis->cc, (const double**)basis->norm,
             erd->capacity, &integrals_count, erd->buffer[tid]);
         *nints = integrals_count;
     } else {
         uint32_t integrals_count = 0;
-        erd__csgto(
-            A, B, C, D,
+        erd__csgto(CINT_SCREEN, CINT_SCREEN_TOL, A, B, C, D,
             basis->nexp, basis->momentum, basis->xyz0,
-            (const double**)basis->exp, basis->minexp, (const double**)basis->cc, (const double**)basis->norm,
+            (const double**)basis->exp, basis->minexp,
+            (const double**)basis->cc, (const double**)basis->norm,
             erd->vrrtable,
             basis->basistype,
             erd->capacity, &integrals_count, erd->buffer[tid]);
@@ -188,12 +201,9 @@ CIntStatus_t CInt_computeShellQuartet( BasisSet_t basis, ERD_t erd, int tid,
 
     *integrals = erd->buffer[tid];
 
-    if (*nints != 0 && isnan((*integrals)[0]))
-    {
-        printf ("NAN %d %d %d %d\n", A, B, C, D);
-    }
     return CINT_STATUS_SUCCESS;
 }
+
 
 CIntStatus_t CInt_computeShellQuartets(BasisSet_t basis,
                                        ERD_t erd,
@@ -206,6 +216,10 @@ CIntStatus_t CInt_computeShellQuartets(BasisSet_t basis,
                                        double **integrals,
                                        int *integralsCountPtr)
 {
+#ifdef ERD_PROFILE_
+    erd_tid = threadId;
+#endif
+
     int totalIntegralsCount = 0;
     for (uint32_t shellIndicesIndex = 0; shellIndicesIndex != shellIndicesCount; shellIndicesIndex += 1) {
         int integralsCount = 0;
@@ -223,10 +237,76 @@ CIntStatus_t CInt_computeShellQuartets(BasisSet_t basis,
 }
 
 
-void CInt_getMaxMemory(ERD_t erd, double *memsize)
+CIntStatus_t CInt_primScreen(BasisSet_t basis, ERD_t erd, int tid,
+                             uint32_t A, uint32_t B, uint32_t C, uint32_t D,
+                             double tol, int *significant)
 {
-    *memsize = erd->capacity * sizeof(double) * erd->nthreads;
+#ifdef ERD_PROFILE_
+    erd_tid = tid;
+#endif
+    
+#if ( _DEBUG_LEVEL_ == 3 )
+    if (A < 0 || A >= basis->nshells ||
+        B < 0 || B >= basis->nshells ||
+        C < 0 || C >= basis->nshells ||
+        D < 0 || D >= basis->nshells) {
+#ifndef __INTEL_OFFLOAD
+        CINT_PRINTF(1, "invalid shell indices\n");
+#endif
+        *nints = 0;
+        return CINT_STATUS_INVALID_VALUE;
+    }
+    if (tid <= 0 ||
+        tid >= erd->nthreads) {
+#ifndef __INTEL_OFFLOAD
+        CINT_PRINTF(1, "invalid thread id\n");
+#endif
+        *nints = 0;
+        return CINT_STATUS_INVALID_VALUE;    
+    }
+#endif // #if ( _DEBUG_LEVEL_ == 3 )
+
+    const uint32_t shell1 = basis->momentum[A];
+    const uint32_t shell2 = basis->momentum[B];
+    const uint32_t shell3 = basis->momentum[C];
+    const uint32_t shell4 = basis->momentum[D];
+    const uint32_t orshell = shell1 | shell2 | shell3 | shell4;
+    if (orshell < 2) {
+        uint32_t integrals_count = 0;
+        erd__1111_csgto(CINT_SCREEN, tol, A, B, C, D,
+            basis->nexp, basis->momentum, basis->xyz0,
+            (const double**)basis->exp,
+            basis->minexp,
+            (const double**)basis->cc, (const double**)basis->norm,
+            erd->capacity, &integrals_count, erd->buffer[tid]);
+        *significant = integrals_count;
+    } else {
+        uint32_t integrals_count = 0;
+        erd__csgto(CINT_SCREEN, tol, A, B, C, D,
+            basis->nexp, basis->momentum, basis->xyz0,
+            (const double**)basis->exp, basis->minexp,
+            (const double**)basis->cc, (const double**)basis->norm,
+            erd->vrrtable,
+            basis->basistype,
+            erd->capacity, &integrals_count, erd->buffer[tid]);
+        *significant = integrals_count;
+    }
+
+    return CINT_STATUS_SUCCESS;
 }
+
+
+void CInt_printERDProfile(ERD_t erd, int mode)
+{
+    erd_print_profile(erd->nthreads, mode);
+}
+
+
+void CInt_resetERDProfile(ERD_t erd)
+{
+    erd_reset_profile(erd->nthreads);
+}
+
 
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(pop)

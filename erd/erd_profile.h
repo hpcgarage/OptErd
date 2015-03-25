@@ -21,6 +21,7 @@
 
 
 #include <stdint.h>
+#include "erdutil.h"
 
 
 #define MAXTHREADS     512
@@ -59,13 +60,7 @@ typedef enum
     erd__num_ticks
 } ErdTicks_t;
 
-
-extern uint64_t erd_ticks[MAXTHREADS][erd__num_ticks + 8];
-
-void erd_reset_profile(void);
-
-void erd_print_profile(int mode);
-
+extern uint64_t erd_ticks[MAXTHREADS][erd__num_ticks + ERD_CACHELINE/sizeof(uint64_t)];
 
 inline uint64_t ReadTSC(void)
 {
@@ -101,19 +96,21 @@ inline uint64_t ReadTSC(void)
 
 #if defined(ERD_PROFILE_) && defined(__linux__)
     #define ERD_PROFILE_START(function) \
-    #ifdef _OPENMP \
-        {const int tid = omp_get_thread_num(); \
-    #else \
-        const int tid = 0; \
-    #endif \
         const uint64_t start_ticks_##function = ReadTSC();
     #define ERD_PROFILE_END(function) \
         const uint64_t end_ticks_##function = ReadTSC(); \
-        erd_ticks[tid][function##_ticks] += end_ticks_##function - start_ticks_##function;}
+        erd_ticks[erd_tid][function##_ticks] += end_ticks_##function - start_ticks_##function;
 #else
     #define ERD_PROFILE_START(function)
     #define ERD_PROFILE_END(function)
 #endif
+
+
+extern __thread int erd_tid;
+
+void erd_reset_profile(int nthreads);
+
+void erd_print_profile(int nthreads, int mode);
 
 
 #endif // ERD_PROFILE_H_

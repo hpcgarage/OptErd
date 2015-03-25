@@ -29,8 +29,8 @@
 #include <offload.h>
 #endif
 
-#include <cint_config.h>
-#include <cint_basisset.h>
+#include "cint_config.h"
+#include "cint_basisset.h"
 
 
 #ifdef __INTEL_OFFLOAD

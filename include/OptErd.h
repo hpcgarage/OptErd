@@ -95,29 +95,29 @@ CIntStatus_t CInt_destroyOED( OED_t oed );
     
 CIntStatus_t CInt_computePairKin( BasisSet_t basis,
                                   OED_t oed,
-                                  int A,
-                                  int B,
+                                  uint32_t A,
+                                  uint32_t B,
                                   double **integrals,
                                   int *nints );
 
 CIntStatus_t CInt_computePairOvl( BasisSet_t basis,
                                   OED_t oed,
-                                  int A,
-                                  int B,
+                                  uint32_t A,
+                                  uint32_t B,
                                   double **integrals,
                                   int *nints );
 
 CIntStatus_t CInt_computePairPot( BasisSet_t basis,
                                   OED_t oed,
-                                  int A,
-                                  int B,
+                                  uint32_t A,
+                                  uint32_t B,
                                   double **integrals,
                                   int *nints );
 
 CIntStatus_t CInt_computePairCoreH( BasisSet_t basis,
                                     OED_t oed,
-                                    int A,
-                                    int B,
+                                    uint32_t A,
+                                    uint32_t B,
                                     double **integrals,
                                     int *nints );
 
@@ -160,10 +160,10 @@ CIntStatus_t CInt_destroyERD( ERD_t erd );
 CIntStatus_t CInt_computeShellQuartet( BasisSet_t basis,
                                        ERD_t erd,
                                        int tid,
-                                       int A,
-                                       int B,
-                                       int C,
-                                       int D,
+                                       uint32_t A,
+                                       uint32_t B,
+                                       uint32_t C,
+                                       uint32_t D,
                                        double **integrals,
                                        int *nints );
 
@@ -177,6 +177,10 @@ CIntStatus_t CInt_computeShellQuartets(BasisSet_t basis,
                                        uint32_t shellIndicesCount,
                                        double **integrals,
                                        int *integralsCount);
+
+CIntStatus_t CInt_primScreen(BasisSet_t basis, ERD_t erd, int tid,
+                             uint32_t A, uint32_t B, uint32_t C, uint32_t D,
+                             double tol, int *significant);
 
 void CInt_getMaxMemory( ERD_t erd,
                         double *memsize );
@@ -207,6 +211,10 @@ void CInt_offload_getMaxMemory( ERD_t erd,
                                 double *mem_mic,
                                 double *mem_cpu );
 #endif
+
+void CInt_printERDProfile(ERD_t erd, int mode);
+
+void CInt_resetERDProfile(ERD_t erd);
 
 #ifdef __cplusplus
 }

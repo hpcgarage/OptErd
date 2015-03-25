@@ -21,9 +21,6 @@
 #include <assert.h>
 #include <math.h>
 #include <string.h>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 #include "erd.h"
 #include "erdutil.h"
 
@@ -167,7 +164,7 @@
 /*                [E0|F0] integrals will be essential for numerical */
 /*                stability during contraction. */
 /* ------------------------------------------------------------------------ */
-ERD_OFFLOAD void erd__csgto(
+ERD_OFFLOAD void erd__csgto(int screen, const double tol,
     uint32_t A, uint32_t B, uint32_t C, uint32_t D,
     const uint32_t npgto[restrict static 1], const uint32_t shell[restrict static 1], const double xyz0[restrict static 1],
     const double *restrict alpha[restrict static 1], const double minalpha[restrict static 1], const double *restrict cc[restrict static 1], const double *restrict norm[restrict static 1],
@@ -266,8 +263,8 @@ ERD_OFFLOAD void erd__csgto(
     ERD_SIMD_ALIGN double rhoab[PAD_SIMD_64(npgtoab)];
     ERD_SIMD_ALIGN double rhocd[PAD_SIMD_64(npgtocd)];
     uint32_t nij, nkl;
-    ERD_PROFILE_START(erd__set_ij_kl_pairs)
-    erd__set_ij_kl_pairs(npgtoa, npgtob, npgtoc, npgtod,
+    ERD_PROFILE_START(erd__set_ij_kl_pairs);
+    erd__set_ij_kl_pairs(screen, tol, npgtoa, npgtob, npgtoc, npgtod,
         minalpha[A], minalpha[B], minalpha[C], minalpha[D],
         xa, ya, za,
         xb, yb, zb,
@@ -282,7 +279,13 @@ ERD_OFFLOAD void erd__csgto(
 
     if (nij * nkl == 0) {
         *output_length = 0;
-        ERD_PROFILE_END(erd__csgto)
+        ERD_PROFILE_END(erd__csgto);
+        return;
+    }
+
+    if (screen == PRIM_SCREEN_ONLY) {
+        *output_length = 1;
+        ERD_PROFILE_END(erd__csgto);
         return;
     }
 
@@ -291,7 +294,7 @@ ERD_OFFLOAD void erd__csgto(
 /*                [e0|f0] generation. Perform also some preparation */
 /*                steps for contraction. */
 
-    ERD_PROFILE_START(erd__prepare_ctr)
+    ERD_PROFILE_START(erd__prepare_ctr);
     const double factor = PREFACT * spnorm;
     const uint32_t npmin = min4x32u(npgtoa, npgtob, npgtoc, npgtod);
     ERD_SIMD_ALIGN double scaled_norm[PAD_SIMD_64(npmin)];

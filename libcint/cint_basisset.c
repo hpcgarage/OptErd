@@ -25,8 +25,8 @@
 #include <ctype.h>
 #include <libgen.h>
 
-#include <cint_config.h>
-#include <cint_basisset.h>
+#include "cint_config.h"
+#include "cint_basisset.h"
 
 #ifdef HAS_MALLOC_H
 #include <malloc.h>

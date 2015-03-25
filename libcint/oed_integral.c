@@ -20,29 +20,24 @@
 #include <string.h>
 #include <math.h>
 
-#include <oed_integral.h>
-#include <cint_basisset.h>
-#include <cint_config.h>
+#include "oed_integral.h"
+#include "cint_basisset.h"
+#include "cint_config.h"
 
 
-static void config_oed (OED_t  oed, int A, int B, BasisSet_t basis)
+static void config_oed(OED_t oed, int A, int B, BasisSet_t basis)
 {
-    int cc_offset_A;
-    int cc_offset_B;
-    int alpha_offset_A;
-    int alpha_offset_B;
-
-    alpha_offset_A = 0;
-    cc_offset_A = 0;
-    alpha_offset_B = basis->nexp[A];
-    cc_offset_B = basis->nexp[A];
+    int alpha_offset_A = 0;
+    int cc_offset_A = 0;
+    int alpha_offset_B = basis->nexp[A];
+    int cc_offset_B = basis->nexp[A];
     oed->ncoeff = alpha_offset_B + basis->nexp[B];
     oed->nalpha = cc_offset_B + basis->nexp[B];
     
-    memcpy (&(oed->alpha[alpha_offset_A]), basis->exp[A], sizeof(double) * basis->nexp[A]);
-    memcpy (&(oed->alpha[alpha_offset_B]), basis->exp[B], sizeof(double) * basis->nexp[B]);
-    memcpy (&(oed->cc[cc_offset_A]), basis->cc[A], sizeof(double) * basis->nexp[A]);
-    memcpy (&(oed->cc[cc_offset_B]), basis->cc[B], sizeof(double) * basis->nexp[B]);
+    memcpy(&(oed->alpha[alpha_offset_A]), basis->exp[A], sizeof(double) * basis->nexp[A]);
+    memcpy(&(oed->alpha[alpha_offset_B]), basis->exp[B], sizeof(double) * basis->nexp[B]);
+    memcpy(&(oed->cc[cc_offset_A]), basis->cc[A], sizeof(double) * basis->nexp[A]);
+    memcpy(&(oed->cc[cc_offset_B]), basis->cc[B], sizeof(double) * basis->nexp[B]);
 
     oed->npgto1 = basis->nexp[A];
     oed->npgto2 = basis->nexp[B];
@@ -71,9 +66,7 @@ static void oed_max_scratch (BasisSet_t basis, OED_t oed)
     _maxMomentum (basis, &max_momentum);
     _maxPrimid (basis, &max_primid);
     
-    config_oed (oed,
-                max_primid, max_primid,
-                basis); 
+    config_oed(oed, max_primid, max_primid, basis); 
 
     oed->shell1 = max_momentum;
     oed->shell2 = max_momentum;
@@ -83,44 +76,43 @@ static void oed_max_scratch (BasisSet_t basis, OED_t oed)
     oed->y2 = 2.0;
     oed->z1 = 1.0;
     oed->z2 = 2.0;
-
-    oed__memory_kin_batch_ (&(oed->nalpha), &(oed->ncoeff),
-                            &(oed->ncgto1), &(oed->ncgto2),
-                            &(oed->npgto1), &(oed->npgto2),
-                            &(oed->shell1), &(oed->shell2),
-                            &(oed->x1), &(oed->y1), &(oed->z1),
-                            &(oed->x2), &(oed->y2), &(oed->z2),
-                            oed->alpha, oed->cc, &(oed->spheric),
-                            &int_memory_min, &int_memory_opt,
-                            &fp_memory_min, &fp_memory_opt);
+    oed__memory_kin_batch_(&(oed->nalpha), &(oed->ncoeff),
+                           &(oed->ncgto1), &(oed->ncgto2),
+                           &(oed->npgto1), &(oed->npgto2),
+                           &(oed->shell1), &(oed->shell2),
+                           &(oed->x1), &(oed->y1), &(oed->z1),
+                           &(oed->x2), &(oed->y2), &(oed->z2),
+                           oed->alpha, oed->cc, &(oed->spheric),
+                           &int_memory_min, &int_memory_opt,
+                           &fp_memory_min, &fp_memory_opt);
     oed->int_memory_opt = oed->int_memory_opt > int_memory_opt ?
             oed->int_memory_opt : int_memory_opt;
     oed->fp_memory_opt = oed->fp_memory_opt > fp_memory_opt ?
             oed->fp_memory_opt : fp_memory_opt;
 
-    oed__memory_ovl_batch_ (&(oed->nalpha), &(oed->ncoeff),
-                            &(oed->ncgto1), &(oed->ncgto2),
-                            &(oed->npgto1), &(oed->npgto2),
-                            &(oed->shell1), &(oed->shell2),
-                            &(oed->x1), &(oed->y1), &(oed->z1),
-                            &(oed->x2), &(oed->y2), &(oed->z2),
-                            oed->alpha, oed->cc, &(oed->spheric),
-                            &int_memory_min, &int_memory_opt,
-                            &fp_memory_min, &fp_memory_opt);
+    oed__memory_ovl_batch_(&(oed->nalpha), &(oed->ncoeff),
+                           &(oed->ncgto1), &(oed->ncgto2),
+                           &(oed->npgto1), &(oed->npgto2),
+                           &(oed->shell1), &(oed->shell2),
+                           &(oed->x1), &(oed->y1), &(oed->z1),
+                           &(oed->x2), &(oed->y2), &(oed->z2),
+                           oed->alpha, oed->cc, &(oed->spheric),
+                           &int_memory_min, &int_memory_opt,
+                           &fp_memory_min, &fp_memory_opt);
     oed->int_memory_opt = oed->int_memory_opt > int_memory_opt ?
             oed->int_memory_opt : int_memory_opt;
     oed->fp_memory_opt = oed->fp_memory_opt > fp_memory_opt ?
             oed->fp_memory_opt : fp_memory_opt;
     
-    oed__memory_nai_batch_ (&(oed->nalpha), &(oed->ncoeff),
-                            &(oed->ncgto1), &(oed->ncgto2),
-                            &(oed->npgto1), &(oed->npgto2),
-                            &(oed->shell1), &(oed->shell2),
-                            &(oed->x1), &(oed->y1), &(oed->z1),
-                            &(oed->x2), &(oed->y2), &(oed->z2),
-                            &(oed->natoms), oed->alpha, oed->cc, &(oed->spheric),                          
-                            &int_memory_min, &int_memory_opt,
-                            &fp_memory_min, &fp_memory_opt);     
+    oed__memory_nai_batch_(&(oed->nalpha), &(oed->ncoeff),
+                           &(oed->ncgto1), &(oed->ncgto2),
+                           &(oed->npgto1), &(oed->npgto2),
+                           &(oed->shell1), &(oed->shell2),
+                           &(oed->x1), &(oed->y1), &(oed->z1),
+                           &(oed->x2), &(oed->y2), &(oed->z2),
+                           &(oed->natoms), oed->alpha, oed->cc, &(oed->spheric),                          
+                           &int_memory_min, &int_memory_opt,
+                           &fp_memory_min, &fp_memory_opt);     
     oed->int_memory_opt = oed->int_memory_opt > int_memory_opt ?
             oed->int_memory_opt : int_memory_opt;
     oed->fp_memory_opt = oed->fp_memory_opt > fp_memory_opt ?
@@ -145,23 +137,23 @@ CIntStatus_t CInt_createOED (BasisSet_t basis, OED_t *oed)
     o->yn = basis->yn;
     o->zn = basis->zn;
     o->charge = basis->charge;
-    o->spheric = OED_SPHERIC;
+    o->spheric = basis->basistype;
     o->screen = OED_SCREEN;
     
-    _maxnumExp (basis, &max_nexp);
-    o->cc = (double *)malloc (2 * max_nexp * sizeof(double));
-    o->alpha = (double *)malloc (2 * max_nexp * sizeof(double));
+    _maxnumExp(basis, &max_nexp);
+    o->cc = (double *)malloc(2 * max_nexp * sizeof(double));
+    o->alpha = (double *)malloc(2 * max_nexp * sizeof(double));
     CINT_ASSERT(o->cc != NULL);
     CINT_ASSERT(o->alpha != NULL);
-    o->coef_offset = (int *)malloc (basis->nshells * sizeof(int));
-    o->exp_offset = (int *)malloc (basis->nshells * sizeof(int));
+    o->coef_offset = (int *)malloc(basis->nshells * sizeof(int));
+    o->exp_offset = (int *)malloc(basis->nshells * sizeof(int));
     CINT_ASSERT(o->coef_offset != NULL);
     CINT_ASSERT(o->exp_offset != NULL);
         
     oed_max_scratch (basis, o);
-    o->zcore = (double *)malloc (o->fp_memory_opt * sizeof(double));
-    o->zcore2 = (double *)malloc (o->fp_memory_opt * sizeof(double));
-    o->icore = (int *)malloc (o->int_memory_opt * sizeof(int));
+    o->zcore = (double *)malloc(o->fp_memory_opt * sizeof(double));
+    o->zcore2 = (double *)malloc(o->fp_memory_opt * sizeof(double));
+    o->icore = (int *)malloc(o->int_memory_opt * sizeof(int));
     CINT_ASSERT(o->zcore != NULL);
     CINT_ASSERT(o->zcore2 != NULL);
     CINT_ASSERT(o->icore != NULL);
@@ -177,79 +169,77 @@ CIntStatus_t CInt_createOED (BasisSet_t basis, OED_t *oed)
 
 CIntStatus_t CInt_destroyOED (OED_t  oed)
 {
-    free (oed->zcore);
-    free (oed->zcore2);
-    free (oed->icore);
-    free (oed->alpha);
-    free (oed->cc);
-    free (oed->coef_offset);
-    free (oed->exp_offset);
-    free (oed);
+    free(oed->zcore);
+    free(oed->zcore2);
+    free(oed->icore);
+    free(oed->alpha);
+    free(oed->cc);
+    free(oed->coef_offset);
+    free(oed->exp_offset);
+    free(oed);
 
     return CINT_STATUS_SUCCESS;
 }
 
 
-CIntStatus_t CInt_computePairKin (BasisSet_t basis, OED_t oed,
-                                  int A, int B,
-                                  double **integrals, int *nints)
+CIntStatus_t CInt_computePairKin(BasisSet_t basis, OED_t oed,
+                                 uint32_t A, uint32_t B,
+                                 double **integrals, int *nints)
 {
     int nfirst;
     
     if (A < 0 || A >= basis->nshells ||
-        B < 0 || B >= basis->nshells)
-    {
-        CINT_PRINTF (1, "invalid shell indices\n");
+        B < 0 || B >= basis->nshells) {
+        CINT_PRINTF(1, "invalid shell indices\n");
         return CINT_STATUS_INVALID_VALUE;
     }
 
-    config_oed (oed, A, B, basis);
+    config_oed(oed, A, B, basis);
 
 #if ( _DEBUG_LEVEL_ == 3 )
     int int_memory_min;
     int int_memory_opt;
     int fp_memory_min;
     int fp_memory_opt;
-    oed__memory_kin_batch_ (&(oed->nalpha), &(oed->ncoeff),
-                            &(oed->ncgto1), &(oed->ncgto2),
-                            &(oed->npgto1), &(oed->npgto2),
-                            &(oed->shell1), &(oed->shell2),
-                            &(oed->x1), &(oed->y1), &(oed->z1),
-                            &(oed->x2), &(oed->y2), &(oed->z2),
-                            oed->alpha, oed->cc, &(oed->spheric),
-                            &int_memory_min, &int_memory_opt,
-                            &fp_memory_min, &fp_memory_opt);
-    
-    assert (fp_memory_opt <= oed->fp_memory_opt);
-    assert (int_memory_opt <= oed->int_memory_opt);   
-#endif
-
-    oed__gener_kin_batch_ (&(oed->imax), &(oed->zmax),
-                           &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
+    oed__memory_kin_batch_(&(oed->nalpha), &(oed->ncoeff),
                            &(oed->ncgto1), &(oed->ncgto2),
                            &(oed->npgto1), &(oed->npgto2),
                            &(oed->shell1), &(oed->shell2),
                            &(oed->x1), &(oed->y1), &(oed->z1),
                            &(oed->x2), &(oed->y2), &(oed->z2),
-                           oed->alpha, oed->cc,
-                           oed->cc_beg, oed->cc_end, &(oed->spheric), &(oed->screen),
-                           oed->icore, nints, &nfirst, oed->zcore);
+                           oed->alpha, oed->cc, &(oed->spheric),
+                           &int_memory_min, &int_memory_opt,
+                           &fp_memory_min, &fp_memory_opt);
+    
+    assert(fp_memory_opt <= oed->fp_memory_opt);
+    assert(int_memory_opt <= oed->int_memory_opt);   
+#endif
+
+    oed__gener_kin_batch_(&(oed->imax), &(oed->zmax),
+                          &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
+                          &(oed->ncgto1), &(oed->ncgto2),
+                          &(oed->npgto1), &(oed->npgto2),
+                          &(oed->shell1), &(oed->shell2),
+                          &(oed->x1), &(oed->y1), &(oed->z1),
+                          &(oed->x2), &(oed->y2), &(oed->z2),
+                          oed->alpha, oed->cc,
+                          oed->cc_beg, oed->cc_end, &(oed->spheric), &(oed->screen),
+                          oed->icore, nints, &nfirst, oed->zcore);
 
     *integrals = &(oed->zcore[nfirst - 1]);
     return CINT_STATUS_SUCCESS;
 }
 
 
-CIntStatus_t CInt_computePairOvl (BasisSet_t basis, OED_t oed,
-                                  int A, int B,
-                                  double **integrals, int *nints)
+CIntStatus_t CInt_computePairOvl(BasisSet_t basis, OED_t oed,
+                                 uint32_t A, uint32_t B,
+                                 double **integrals, int *nints)
 {
     int nfirst;
     
     if (A < 0 || A >= basis->nshells ||
-        B < 0 || B >= basis->nshells)
-    {
-        CINT_PRINTF (1, "invalid shell indices\n");
+        B < 0 || B >= basis->nshells) {
+        CINT_PRINTF(1, "invalid shell indices\n");
         return CINT_STATUS_INVALID_VALUE;
     }
     
@@ -260,91 +250,90 @@ CIntStatus_t CInt_computePairOvl (BasisSet_t basis, OED_t oed,
     int int_memory_opt;
     int fp_memory_min;
     int fp_memory_opt;
-    oed__memory_ovl_batch_ (&(oed->nalpha), &(oed->ncoeff),
-                            &(oed->ncgto1), &(oed->ncgto2),
-                            &(oed->npgto1), &(oed->npgto2),
-                            &(oed->shell1), &(oed->shell2),
-                            &(oed->x1), &(oed->y1), &(oed->z1),
-                            &(oed->x2), &(oed->y2), &(oed->z2),
-                            oed->alpha, oed->cc, &(oed->spheric),
-                            &int_memory_min, &int_memory_opt,
-                            &fp_memory_min, &fp_memory_opt);
-    
-    assert (fp_memory_opt <= oed->fp_memory_opt);
-    assert (int_memory_opt <= oed->int_memory_opt);   
-#endif
-
-    oed__gener_ovl_batch_ (&(oed->imax), &(oed->zmax),
-                           &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
+    oed__memory_ovl_batch_(&(oed->nalpha), &(oed->ncoeff),
                            &(oed->ncgto1), &(oed->ncgto2),
                            &(oed->npgto1), &(oed->npgto2),
                            &(oed->shell1), &(oed->shell2),
                            &(oed->x1), &(oed->y1), &(oed->z1),
                            &(oed->x2), &(oed->y2), &(oed->z2),
-                           oed->alpha, oed->cc, oed->cc_beg, oed->cc_end,
-                           &(oed->spheric), &(oed->screen),
-                           oed->icore, nints, &nfirst, oed->zcore);
+                           oed->alpha, oed->cc, &(oed->spheric),
+                           &int_memory_min, &int_memory_opt,
+                           &fp_memory_min, &fp_memory_opt);
+    
+    assert(fp_memory_opt <= oed->fp_memory_opt);
+    assert(int_memory_opt <= oed->int_memory_opt);   
+#endif
+
+    oed__gener_ovl_batch_(&(oed->imax), &(oed->zmax),
+                          &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
+                          &(oed->ncgto1), &(oed->ncgto2),
+                          &(oed->npgto1), &(oed->npgto2),
+                          &(oed->shell1), &(oed->shell2),
+                          &(oed->x1), &(oed->y1), &(oed->z1),
+                          &(oed->x2), &(oed->y2), &(oed->z2),
+                          oed->alpha, oed->cc, oed->cc_beg, oed->cc_end,
+                          &(oed->spheric), &(oed->screen),
+                          oed->icore, nints, &nfirst, oed->zcore);
 
     *integrals = &(oed->zcore[nfirst - 1]);  
     return CINT_STATUS_SUCCESS;
 }
 
 
-CIntStatus_t CInt_computePairPot (BasisSet_t basis, OED_t oed,
-                                  int A, int B,
-                                  double **integrals, int *nints)
+CIntStatus_t CInt_computePairPot(BasisSet_t basis, OED_t oed,
+                                 uint32_t A, uint32_t B,
+                                 double **integrals, int *nints)
 {
     int nfirst;
     if (A < 0 || A >= basis->nshells ||
-        B < 0 || B >= basis->nshells)
-    {
+        B < 0 || B >= basis->nshells) {
         CINT_PRINTF (1, "invalid shell indices\n");
         return CINT_STATUS_INVALID_VALUE;
     }
     
-    config_oed (oed, A, B, basis);
+    config_oed(oed, A, B, basis);
 
 #if ( _DEBUG_LEVEL_ == 3 )
     int int_memory_min;
     int int_memory_opt;
     int fp_memory_min;
     int fp_memory_opt;
-    oed__memory_nai_batch_ (&(oed->nalpha), &(oed->ncoeff),
-                            &(oed->ncgto1), &(oed->ncgto2),
-                            &(oed->npgto1), &(oed->npgto2),
-                            &(oed->shell1), &(oed->shell2),
-                            &(oed->x1), &(oed->y1), &(oed->z1),
-                            &(oed->x2), &(oed->y2), &(oed->z2),
-                            &(oed->natoms), oed->alpha, oed->cc, &(oed->spheric),
-                            &int_memory_min, &int_memory_opt,
-                            &fp_memory_min, &fp_memory_opt);
-    
-    assert (fp_memory_opt <= oed->fp_memory_opt);
-    assert (int_memory_opt <= oed->int_memory_opt);   
-#endif
-
-    oed__gener_nai_batch_ (&(oed->imax), &(oed->zmax),
-                           &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
+    oed__memory_nai_batch_(&(oed->nalpha), &(oed->ncoeff),
                            &(oed->ncgto1), &(oed->ncgto2),
                            &(oed->npgto1), &(oed->npgto2),
                            &(oed->shell1), &(oed->shell2),
                            &(oed->x1), &(oed->y1), &(oed->z1),
                            &(oed->x2), &(oed->y2), &(oed->z2),
-                           &(oed->natoms),
-                           oed->xn, oed->yn, oed->zn,
-                           oed->charge, oed->alpha, oed->cc,
-                           oed->cc_beg, oed->cc_end,
-                           &(oed->spheric), &(oed->screen),
-                           oed->icore, nints, &nfirst, oed->zcore);
+                           &(oed->natoms), oed->alpha, oed->cc, &(oed->spheric),
+                           &int_memory_min, &int_memory_opt,
+                           &fp_memory_min, &fp_memory_opt);
+    
+    assert(fp_memory_opt <= oed->fp_memory_opt);
+    assert(int_memory_opt <= oed->int_memory_opt);   
+#endif
+
+    oed__gener_nai_batch_(&(oed->imax), &(oed->zmax),
+                          &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
+                          &(oed->ncgto1), &(oed->ncgto2),
+                          &(oed->npgto1), &(oed->npgto2),
+                          &(oed->shell1), &(oed->shell2),
+                          &(oed->x1), &(oed->y1), &(oed->z1),
+                          &(oed->x2), &(oed->y2), &(oed->z2),
+                          &(oed->natoms),
+                          oed->xn, oed->yn, oed->zn,
+                          oed->charge, oed->alpha, oed->cc,
+                          oed->cc_beg, oed->cc_end,
+                          &(oed->spheric), &(oed->screen),
+                          oed->icore, nints, &nfirst, oed->zcore);
 
     *integrals = &(oed->zcore[nfirst - 1]);
     return CINT_STATUS_SUCCESS;
 }
 
 
-CIntStatus_t CInt_computePairCoreH (BasisSet_t basis, OED_t oed,
-                                    int A, int B,
-                                    double **integrals, int *nints)
+CIntStatus_t CInt_computePairCoreH(BasisSet_t basis, OED_t oed,
+                                   uint32_t A, uint32_t B,
+                                   double **integrals, int *nints)
 {
     int nfirst;
     int nfirst2;
@@ -353,101 +342,81 @@ CIntStatus_t CInt_computePairCoreH (BasisSet_t basis, OED_t oed,
     int i;
 
     if (A < 0 || A >= basis->nshells ||
-        B < 0 || B >= basis->nshells)
-    {
+        B < 0 || B >= basis->nshells) {
         CINT_PRINTF (1, "invalid shell indices\n");
         return CINT_STATUS_INVALID_VALUE;
     }
     
-    config_oed (oed, A, B, basis);
+    config_oed(oed, A, B, basis);
 
 #if ( _DEBUG_LEVEL_ == 3 )
     int int_memory_min;
     int int_memory_opt;
     int fp_memory_min;
     int fp_memory_opt;
-    oed__memory_kin_batch_ (&(oed->nalpha), &(oed->ncoeff),
-                            &(oed->ncgto1), &(oed->ncgto2),
-                            &(oed->npgto1), &(oed->npgto2),
-                            &(oed->shell1), &(oed->shell2),
-                            &(oed->x1), &(oed->y1), &(oed->z1),
-                            &(oed->x2), &(oed->y2), &(oed->z2),
-                            oed->alpha, oed->cc, &(oed->spheric),
-                            &int_memory_min, &int_memory_opt,
-                            &fp_memory_min, &fp_memory_opt);
+    oed__memory_kin_batch_(&(oed->nalpha), &(oed->ncoeff),
+                           &(oed->ncgto1), &(oed->ncgto2),
+                           &(oed->npgto1), &(oed->npgto2),
+                           &(oed->shell1), &(oed->shell2),
+                           &(oed->x1), &(oed->y1), &(oed->z1),
+                           &(oed->x2), &(oed->y2), &(oed->z2),
+                           oed->alpha, oed->cc, &(oed->spheric),
+                           &int_memory_min, &int_memory_opt,
+                           &fp_memory_min, &fp_memory_opt);
 
-    assert (fp_memory_opt <= oed->fp_memory_opt);
-    assert (int_memory_opt <= oed->int_memory_opt);
-    oed__memory_nai_batch_ (&(oed->nalpha), &(oed->ncoeff),
-                            &(oed->ncgto1), &(oed->ncgto2),
-                            &(oed->npgto1), &(oed->npgto2),
-                            &(oed->shell1), &(oed->shell2),
-                            &(oed->x1), &(oed->y1), &(oed->z1),
-                            &(oed->x2), &(oed->y2), &(oed->z2),
-                            &(oed->natoms), oed->alpha, oed->cc, &(oed->spheric),
-                            &int_memory_min, &int_memory_opt,
-                            &fp_memory_min, &fp_memory_opt);
+    assert(fp_memory_opt <= oed->fp_memory_opt);
+    assert(int_memory_opt <= oed->int_memory_opt);
+    oed__memory_nai_batch_(&(oed->nalpha), &(oed->ncoeff),
+                           &(oed->ncgto1), &(oed->ncgto2),
+                           &(oed->npgto1), &(oed->npgto2),
+                           &(oed->shell1), &(oed->shell2),
+                           &(oed->x1), &(oed->y1), &(oed->z1),
+                           &(oed->x2), &(oed->y2), &(oed->z2),
+                           &(oed->natoms), oed->alpha, oed->cc, &(oed->spheric),
+                           &int_memory_min, &int_memory_opt,
+                           &fp_memory_min, &fp_memory_opt);
 
-    assert (fp_memory_opt <= oed->fp_memory_opt);
-    assert (int_memory_opt <= oed->int_memory_opt);   
+    assert(fp_memory_opt <= oed->fp_memory_opt);
+    assert(int_memory_opt <= oed->int_memory_opt);   
 #endif
 
-    oed__gener_kin_batch_ (&(oed->imax), &(oed->zmax),
-                           &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
-                           &(oed->ncgto1), &(oed->ncgto2),
-                           &(oed->npgto1), &(oed->npgto2),
-                           &(oed->shell1), &(oed->shell2),
-                           &(oed->x1), &(oed->y1), &(oed->z1),
-                           &(oed->x2), &(oed->y2), &(oed->z2),
-                           oed->alpha, oed->cc, oed->cc_beg, oed->cc_end,
-                           &(oed->spheric), &(oed->screen),
-                           oed->icore, &ni2, &nfirst2, oed->zcore2);
+    oed__gener_kin_batch_(&(oed->imax), &(oed->zmax),
+                          &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
+                          &(oed->ncgto1), &(oed->ncgto2),
+                          &(oed->npgto1), &(oed->npgto2),
+                          &(oed->shell1), &(oed->shell2),
+                          &(oed->x1), &(oed->y1), &(oed->z1),
+                          &(oed->x2), &(oed->y2), &(oed->z2),
+                          oed->alpha, oed->cc, oed->cc_beg, oed->cc_end,
+                          &(oed->spheric), &(oed->screen),
+                          oed->icore, &ni2, &nfirst2, oed->zcore2);
     
-    oed__gener_nai_batch_ (&(oed->imax), &(oed->zmax),
-                           &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
-                           &(oed->ncgto1), &(oed->ncgto2),
-                           &(oed->npgto1), &(oed->npgto2),
-                           &(oed->shell1), &(oed->shell2),
-                           &(oed->x1), &(oed->y1), &(oed->z1),
-                           &(oed->x2), &(oed->y2), &(oed->z2),
-                           &(oed->natoms),
-                           oed->xn, oed->yn, oed->zn,
-                           oed->charge, oed->alpha, oed->cc,
-                           oed->cc_beg, oed->cc_end,
-                           &(oed->spheric), &(oed->screen),
-                           oed->icore, &ni, &nfirst, oed->zcore);
-
-    if (ni != 0)
-    {
-        for (i = 0; i < ni; i++)
-        {
-            if (fabs(oed->zcore[nfirst - 1 + i]) < 1e-13)
-            {
-                oed->zcore[nfirst - 1 + i] = 0.0;
-            }
-        }
-    }
+    oed__gener_nai_batch_(&(oed->imax), &(oed->zmax),
+                          &(oed->nalpha), &(oed->ncoeff), &(oed->ncsum),
+                          &(oed->ncgto1), &(oed->ncgto2),
+                          &(oed->npgto1), &(oed->npgto2),
+                          &(oed->shell1), &(oed->shell2),
+                          &(oed->x1), &(oed->y1), &(oed->z1),
+                          &(oed->x2), &(oed->y2), &(oed->z2),
+                          &(oed->natoms),
+                          oed->xn, oed->yn, oed->zn,
+                          oed->charge, oed->alpha, oed->cc,
+                          oed->cc_beg, oed->cc_end,
+                          &(oed->spheric), &(oed->screen),
+                          oed->icore, &ni, &nfirst, oed->zcore);
 
     *integrals = &(oed->zcore[nfirst - 1]);
-    if (ni != 0 && ni2 != 0)
-    {
-        for (i = 0; i < ni; i++)
-        {
+    if (ni != 0 && ni2 != 0) {
+        for (i = 0; i < ni; i++) {
             oed->zcore[nfirst - 1 + i] += oed->zcore2[nfirst2 - 1 + i];           
         }
         *nints = ni;
-    }
-    else if (ni != 0)
-    {
+    } else if (ni != 0) {
         *nints = ni;
-    }
-    else if (ni2 != 0)
-    {
+    } else if (ni2 != 0) {
         *integrals = &(oed->zcore2[nfirst2 - 1]);
         *nints = ni2;
-    }
-    else
-    {
+    } else {
         *nints = 0;
     }
     

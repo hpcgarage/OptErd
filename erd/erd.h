@@ -22,12 +22,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 #include "erd_profile.h"
 
 #define PREFACT     9.027033336764101
+#define PRIM_SCREEN       0
+#define NO_PRIM_SCREEN    1
+#define PRIM_SCREEN_ONLY  2
 
 
 /*******************************************************************/
@@ -41,7 +41,7 @@ void erd__move_ry(uint32_t nindex, uint32_t notmove, uint32_t move, uint32_t nry
     uint32_t index, const double x[restrict static notmove * move * nry],
     uint32_t ixoff[restrict static nindex], double y[restrict static notmove * move * nry]);
 
-void erd__set_ij_kl_pairs(
+void erd__set_ij_kl_pairs(int screen, const double tol,
     uint32_t npgtoa, uint32_t npgtob, uint32_t npgtoc, uint32_t npgtod,
     double minalphaa, double minalphab, double minalphac, double minalphad,
     double xa, double ya, double za,
@@ -54,7 +54,10 @@ void erd__set_ij_kl_pairs(
     const double alphac[restrict static npgtoc],
     const double alphad[restrict static npgtod],
     uint32_t nij_ptr[restrict static 1], uint32_t nkl_ptr[restrict static 1],
-    uint32_t prima[restrict static npgtoa*npgtob], uint32_t primb[restrict static npgtoa*npgtob], uint32_t primc[restrict static npgtoc*npgtod], uint32_t primd[restrict static npgtoc*npgtod],
+    uint32_t prima[restrict static npgtoa*npgtob],
+    uint32_t primb[restrict static npgtoa*npgtob],
+    uint32_t primc[restrict static npgtoc*npgtod],
+    uint32_t primd[restrict static npgtoc*npgtod],
     double rhoab[restrict static npgtoa*npgtob],
     double rhocd[restrict static npgtoc*npgtod]);
 
@@ -269,6 +272,42 @@ void erd__rys_x_roots_weights(int nt, int ntgqp, int ngqp,
     int nmom, const double tval[restrict],
     const double ryszero[restrict],
     double rts[restrict], double wts[restrict]);
+
+void erd__1111_csgto(int screen, const double tol,
+    uint32_t A, uint32_t B, uint32_t C, uint32_t D,
+    const uint32_t npgto[restrict static 1],
+    const uint32_t shell[restrict static 1],
+    const double xyz0[restrict static 1],
+    const double *restrict alpha[restrict static 1],
+    const double minalpha[restrict static 1],
+    const double *restrict cc[restrict static 1],
+    const double *restrict norm[restrict static 1],
+    uint32_t buffer_capacity, uint32_t integrals_count[restrict static 1],
+    double integrals_ptr[restrict static 81]);
+
+void erd__csgto(int screen, const double tol,
+    uint32_t A, uint32_t B, uint32_t C, uint32_t D,
+    const uint32_t npgto[restrict static 1],
+    const uint32_t shell[restrict static 1],
+    const double xyz0[restrict static 1],
+    const double *restrict alpha[restrict static 1],
+    const double minalpha[restrict static 1],
+    const double *restrict cc[restrict static 1],
+    const double *restrict norm[restrict static 1],
+    int **vrrtab,
+    bool spheric,
+    uint32_t buffer_capacity,
+    uint32_t output_length[restrict static 1],
+    double output_buffer[restrict static 1]);
+
+ERD_OFFLOAD size_t erd__memory_csgto(uint32_t npgto1, uint32_t npgto2,
+    uint32_t npgto3, uint32_t npgto4,
+    uint32_t shell1, uint32_t shell2, uint32_t shell3, uint32_t shell4,
+    double x1, double y1, double z1,
+    double x2, double y2, double z2,
+    double x3, double y3, double z3,
+    double x4, double y4, double z4,
+    bool spheric);
 
 #ifdef __INTEL_OFFLOAD
 #pragma offload_attribute(pop)

@@ -20,9 +20,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 #include <unistd.h>
 
 #include "erd_profile.h"
@@ -30,7 +27,8 @@
 #include "erdutil.h"
 
 
-ERD_CACHE_ALIGN uint64_t erd_ticks[MAXTHREADS][erd__num_ticks + 8];
+ERD_CACHE_ALIGN uint64_t erd_ticks[MAXTHREADS][erd__num_ticks + ERD_CACHELINE/sizeof(uint64_t)];
+__thread int erd_tid = 0;
 
 static char ticks_name[erd__num_ticks][128] = 
 {
@@ -61,37 +59,26 @@ static char ticks_name[erd__num_ticks][128] =
 };
 
 
-void erd_reset_profile(void)
+void erd_reset_profile(int nthreads)
 {
-#ifdef _OPENMP
-    const int nthreads = omp_get_max_threads();
-    assert(nthreads <= MAXTHREADS);
-#else
-    const int nthreads = 1;
-#endif
     printf("Reset profiler for %d threads\n", nthreads);
-    #pragma omp parallel for
-    for (int i = 0; i < nthreads; i++) {
-        memset(erd_ticks[i], 0, sizeof(uint64_t) * erd__num_ticks);
+    for (int tid = 0; tid < nthreads; tid++) {
+        memset(erd_ticks[tid], 0, sizeof(uint64_t) * erd__num_ticks);
     }
 }
 
 
-void erd_print_profile(int mode)
+void erd_print_profile(int nthreads, int mode)
 {
     double total_secs = 0.0;
-#ifdef _OPENMP
-    const int nthreads = omp_get_max_threads ();
-#else
-    const int nthreads = 1;
-#endif
     const uint64_t start_clock = ReadTSC();
     sleep(1);
     const uint64_t end_clock = ReadTSC();
     const uint64_t freq = end_clock - start_clock;
 
     printf("\n");    
-    printf("ticks = %.3e\n", (double)freq/1e9); 
+    printf("ticks = %.3e\n", (double)freq/1e9);
+    
     for (int k = 0; k < erd__num_ticks; k++) {
         total_secs = 0.0;
         printf("%28s", ticks_name[k]);
