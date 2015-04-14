@@ -4,7 +4,7 @@ from __future__ import print_function
 import os
 import sys
 import argparse
-import ninja
+import ninja_syntax
 
 
 def get_program_info(program, arguments, use_stdout=True):
@@ -73,7 +73,7 @@ class Configuration:
 
     def __init__(self, options, ninja_build_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "build.ninja")):
         self.output = open(ninja_build_file, "w")
-        self.writer = ninja.Writer(self.output)
+        self.writer = ninja_syntax.Writer(self.output)
         self.source_dir = None
         self.build_dir = None
         self.artifact_dir = None

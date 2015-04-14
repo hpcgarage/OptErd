@@ -6,7 +6,7 @@ The code can be build with [Ninja build system](http://martine.github.io/ninja/)
 Requirements
 ------------
 
-* Python 2 with `ninja` and `argparse` packages
+* Python 2 with `ninja-syntax` and `argparse` packages (`pip install ninja-syntax argparse`)
 * [Ninja build system](http://martine.github.io/ninja/)
 * Intel Compiler
 * Intel MPSS for MIC builds (including builds with MIC offload)
