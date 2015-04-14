@@ -1,0 +1,9 @@
+before_install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq python python-pip gfortran ninja-build
+ - sudo pip install ninja-syntax
+language: c
+before_script:
+ - ./configure.py -arch nehalem
+script: ninja
+
