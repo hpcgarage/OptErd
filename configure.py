@@ -69,7 +69,7 @@ class Configuration:
     _extra_cflags = ["-O3", "-g", "-std=gnu99", "-D__ALIGNLEN__=64", "-Wall", "-Wextra"]
     _native_cflags = ["-D__ERD_PROFILE__"]
     _offload_cflags = ["-offload-option,mic,compiler,\"-z defs -no-opt-prefetch\""]
-    _extra_ldflags = ["-lrt", "-lm"]
+    _extra_ldflags = ["-lm"]
 
     def __init__(self, options, ninja_build_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "build.ninja")):
         self.output = open(ninja_build_file, "w")
@@ -88,6 +88,8 @@ class Configuration:
         else:
             cflags = Configuration._cflags_gnu_map[options.arch]
             cflags += ["-fopenmp"]
+            if sys.platform == "darwin":
+                cflags += ["-Wa,-q"]
         if options.offload:
             cflags += Configuration._offload_cflags
         else:
@@ -102,8 +104,12 @@ class Configuration:
         else:
             fflags = Configuration._fflags_gnu_map[options.arch]
             fflags += ["-frecursive"]
+            if sys.platform == "darwin":
+                fflags += ["-Wa,-q"]
         fflags += Configuration._extra_fflags
         ldflags = Configuration._extra_ldflags
+        if sys.platform.startswith("linux"):
+            ldflags += ["-lrt"]
         if use_icc:
             ldflags += ["-static-intel", "-no-intel-extensions", "-lifcore", "-openmp"]
         else:
@@ -284,7 +290,8 @@ def main():
     config.artifact_dir = os.path.join(root_dir, "lib")
     cint_objects = []
     for cint_source in cint_sources:
-        cint_objects.append(config.cc(cint_source, include_dirs=[config.source_dir, os.path.join(root_dir, "include")]))
+        cint_objects.append(config.cc(cint_source,
+            include_dirs=[config.source_dir, os.path.join(root_dir, "erd"), os.path.join(root_dir, "include")]))
     libcint = config.ar(cint_objects, "libcint.a")
 
     # Build unit & perf tests

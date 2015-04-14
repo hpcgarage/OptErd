@@ -106,7 +106,7 @@ int main (int argc, char **argv)
     printf("Computing integrals ...\n");
 
     // reset profiler
-    erd_reset_profile();
+    erd_reset_profile(nthreads);
 
     //printf ("max memory footprint per thread = %lf KB\n",
     //    CInt_getMaxMemory (erd[0])/1024.0);
@@ -195,7 +195,7 @@ int main (int argc, char **argv)
     printf("Average time per call: %.3le us\n", 1000.0 * 1000.0 * timepass / totalcalls[0]);
 
     // use 1 if thread timing is not required
-    erd_print_profile(1);
+    erd_print_profile(nthreads, 0);
 
     REPORT_FLOPS
     REPORT_RATIO
