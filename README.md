@@ -1,6 +1,8 @@
 OptErd
 ======
 
+[![Build Status](https://travis-ci.org/hpcgarage/OptErd.svg?branch=master)](https://travis-ci.org/hpcgarage/OptErd)
+
 The code can be build with [Ninja build system](http://martine.github.io/ninja/). The script configure.py generate Ninja build file (build.ninja) which builds the libraries (ERD and OED), C interface, and tests.
 
 Requirements
